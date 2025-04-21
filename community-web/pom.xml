@@ -41,7 +41,7 @@
           </execution>
         </executions>
         <configuration>
-          <mainClass>com.easybbs.EasybbsWebApplication</mainClass>
+          <mainClass>fun.masttf.communityWebApplication</mainClass>
         </configuration>
       </plugin>
     </plugins>

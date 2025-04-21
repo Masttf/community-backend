@@ -40,7 +40,7 @@
           </execution>
         </executions>
         <configuration>
-          <mainClass>com.easybbs.EasybbsWebApplication</mainClass>
+          <mainClass>fun.masttf.communityAdminApplication</mainClass>
         </configuration>
       </plugin>
     </plugins>
