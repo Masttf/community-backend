@@ -1,0 +1,29 @@
+# Maven
+target/
+
+# Gradle
+build/
+.gradle/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+
+# Package files
+*.jar
+*.war
+*.zip
+*.tar.gz
+
+# OS generated files
+.DS_Store
+.localized

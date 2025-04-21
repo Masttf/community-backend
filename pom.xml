@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <!-- 模型版本 -->
   <modelVersion>4.0.0</modelVersion>
+
 
   <parent>
     <groupId>org.springframework.boot</groupId>
@@ -8,20 +10,114 @@
     <version>2.6.1</version>
   </parent>      
   
+  <!-- 项目基本信息 -->
   <groupId>fun.masttf</groupId>
   <artifactId>community</artifactId>
   <packaging>pom</packaging>
   <version>1.0</version>
-      
+  
+  <!-- 项目名称和描述 -->
   <name>community-java</name>
-      
+  
+  <!-- 项目模块（多模块项目中使用） -->
   <modules>
     <module>community-common</module>
     <module>community-web</module>
     <module>community-admin</module>      
   </modules>
-      
+  
+  <!-- 项目属性 -->
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <java.version>1.8</java.version>
+    <skipTests>true</skipTests>
+    <spring-boot.version>2.6.1</spring-boot.version>
+    <mybatis.version>2.2.1</mybatis.version>
+    <logback.version>1.2.10</logback.version>
+    <mysql.version>8.0.28</mysql.version>
+    <aspectjweaver.version>1.9.4</aspectjweaver.version>
+    <okhttp3.version>3.2.0</okhttp3.version>
+    <fastjson.version>1.2.66</fastjson.version>
+    <commons-lang3.version>3.4</commons-lang3.version>
+    <commons.codec.version>1.9</commons.codec.version>
+    <commons-io.version>2.5</commons-io.version>
   </properties>
+
+  <!-- 依赖管理（多模块项目中使用）只声明不引入 -->
+  <dependencyManagement>
+    <dependencies>
+      <!-- MyBatis -->
+      <dependency>
+        <groupId>org.mybatis.spring.boot</groupId>
+        <artifactId>mybatis-spring-boot-starter</artifactId>
+        <version>${mybatis.version}</version>
+      </dependency>
+
+      <!-- 数据库 MySQL Connector -->
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>${mysql.version}</version>
+      </dependency>
+
+      <!-- 邮件发送 -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-mail</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
+
+      <!-- 日志 -->
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-core</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+
+      <!-- AOP切面 -->
+      <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>${aspectjweaver.version}</version>
+      </dependency>
+
+      <!-- OkHttp -->
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>${okhttp3.version}</version>
+      </dependency>
+
+      <!-- FastJSON -->
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>fastjson</artifactId>
+        <version>${fastjson.version}</version>
+      </dependency>
+
+      <!-- Apache Commons -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons.codec.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>

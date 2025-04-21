@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Logback 配置 -->
+<!-- scan="true" 表示配置文件如果发生改变，将会被重新加载，默认间隔为1分钟 -->
+<!-- scanPeriod="10 minutes" 设置扫描间隔，这里设置为10分钟 -->
+<configuration scan="true" scanPeriod="10 minutes">
+
+    <!-- 控制台输出配置 -->
+    <appender name="stdot" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 日志输出格式 -->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <!-- pattern:
+                 %d{yyyy-MM-dd HH:mm:ss,GMT+8} : 日志生成时间，格式为 年-月-日 时:分:秒,时区+8
+                 [%p] : 日志级别 (TRACE, DEBUG, INFO, WARN, ERROR)
+                 [%c] : 日志所在的类名
+                 [%M] : 日志所在的具体方法名
+                 [%L] : 日志所在的行号
+                 ->%m%n : 日志内容，%n 表示换行
+            -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss,GMT+8} [%p][%c][%M][%L]-> %m%n</pattern>
+        </layout>
+    </appender>
+
+    <!-- Spring Boot 属性，从 application.properties 或 application.yaml 中读取 -->
+    <!-- log.path: 日志文件存放的根路径，这里从 project.folder 属性读取 -->
+    <springProperty scope="context" name="log.path" source="project.folder"/>
+    <!-- log.root.level: 根日志记录器的级别，这里从 logging.level.root 属性读取 -->
+    <springProperty scope="context" name="log.root.level" source="logging.level.root"/>
+
+    <!-- 自定义属性 -->
+    <!-- LOG_FOLDER: 日志文件存放的文件夹名称 -->
+    <property name="LOG_FOLDER" value="logs"/>
+    <!-- LOG_FILE_NAME: 日志文件的基础名称 -->
+    <property name="LOG_FILE_NAME" value="community-web.log"/>
+
+    <!-- 文件输出配置 -->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- file: 当前日志文件的路径和名称 -->
+        <file>${log.path}/${LOG_FOLDER}/${LOG_FILE_NAME}</file>
+        <!-- rollingPolicy: 日志滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- cleanHistoryOnStart: 应用启动时是否清理旧日志文件 -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+            <!-- FileNamePattern: 归档日志文件的命名模式 -->
+            <!-- %d{yyyy-MM-dd} : 按天归档
+                 %i : 当天日志文件超过 MaxFileSize 时，按序号分割
+                 .gz : 归档文件使用 gzip 压缩
+            -->
+            <FileNamePattern>${log.path}/${LOG_FOLDER}/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.%i</FileNamePattern>
+            <!-- TimeBasedFileNamingAndTriggeringPolicy: 基于时间和大小的触发策略 -->
+            <TimeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- MaxFileSize: 每个日志文件的最大大小，这里设置为 20MB -->
+                <MaxFileSize>20MB</MaxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+            <!-- maxHistory: 保留的归档日志文件数量，这里保留最近 30 天的日志 -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <!-- encoder: 日志编码器 -->
+        <encoder>
+            <!-- charset: 日志文件编码 -->
+            <charset>utf-8</charset>
+            <!-- pattern: 日志输出格式，与控制台输出格式相同 -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss,GMT+8} [%p][%c][%M][%L]-> %m%n</pattern>
+        </encoder>
+        <!-- append: 是否追加到现有文件，false 表示覆盖 -->
+        <append>false</append>
+        <!-- prudent: 是否启用安全模式，多进程写入同一文件时使用 -->
+        <prudent>false</prudent>
+    </appender>
+
+    <!-- 根日志记录器 -->
+    <!-- level: 根日志记录器的级别，这里使用 springProperty 读取的值 -->
+    <root level="${log.root.level}">
+        <!-- appender-ref: 引用上面定义的 appender，将日志输出到控制台 -->
+        <appender-ref ref="stdot"/>
+        <!-- appender-ref: 引用上面定义的 appender，将日志输出到文件 -->
+        <appender-ref ref="file"/>
+    </root>
+
+</configuration>

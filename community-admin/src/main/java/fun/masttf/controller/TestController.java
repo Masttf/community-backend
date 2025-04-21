@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 
 @RestController
-@RequestMapping("/api")
 public class TestController {
     @RequestMapping(value = "/test", method=RequestMethod.GET)
     public String test(){
