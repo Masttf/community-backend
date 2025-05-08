@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fun.masttf.mapper.LikeRecordMapper">
+	<!-- 实体类映射 -->
+	<resultMap id="BaseResultMap" type="fun.masttf.entity.po.LikeRecord">
+		<!--自增ID -->
+		<id column="op_id" property="opId" />
+		<!--操作类型0:文章点赞 1:评论点赞 -->
+		<result column="op_type" property="opType" />
+		<!--主体ID -->
+		<result column="object_id" property="objectId" />
+		<!--用户ID -->
+		<result column="user_id" property="userId" />
+		<!--发布时间 -->
+		<result column="create_time" property="createTime" />
+		<!--主体作者ID -->
+		<result column="author_user_id" property="authorUserId" />
+	</resultMap>
+
+	<!-- 基础查询列 -->
+	<sql id="BaseColumnList">
+		op_id,op_type,object_id,user_id,create_time,author_user_id
+	</sql>
+
+	<!-- 基础查询条件 -->
+	<sql id="BaseQueryCondition">
+		<if test="query.opId != null">
+			and op_id = #{query.opId}
+		</if>
+		<if test="query.opType != null">
+			and op_type = #{query.opType}
+		</if>
+		<if test="query.objectId != null and query.objectId != ''">
+			and object_id = #{query.objectId}
+		</if>
+		<if test="query.userId != null and query.userId != ''">
+			and user_id = #{query.userId}
+		</if>
+		<if test="query.createTime != null">
+			and create_time = #{query.createTime}
+		</if>
+		<if test="query.authorUserId != null and query.authorUserId != ''">
+			and author_user_id = #{query.authorUserId}
+		</if>
+	</sql>
+
+	<!-- 拓展的查询条件 -->
+	<sql id="BaseQueryExtendCondition">
+		<if test="query.objectIdFuzzy != null and query.objectIdFuzzy != ''">
+			and object_id LIKE CONCAT('%', #{query.objectIdFuzzy}, '%')
+		</if>
+		<if test="query.userIdFuzzy != null and query.userIdFuzzy != ''">
+			and user_id LIKE CONCAT('%', #{query.userIdFuzzy}, '%')
+		</if>
+		<if test="query.createTimeStart != null and query.createTimeStart != ''">
+			<![CDATA[ and create_time >= str_to_date(#{query.createTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createTimeEnd != null and query.createTimeEnd != ''">
+			<![CDATA[ and create_time < DATE_ADD(str_to_date(#{query.createTimeEnd},'%Y-%m-%d'), INTERVAL 1 DAY) ]]>
+		</if>
+		<if test="query.authorUserIdFuzzy != null and query.authorUserIdFuzzy != ''">
+			and author_user_id LIKE CONCAT('%', #{query.authorUserIdFuzzy}, '%')
+		</if>
+	</sql>
+
+	<!-- 通用查询条件 -->
+	<sql id="QueryCondition">
+		<where>
+			<include refid="BaseQueryCondition" />
+			<include refid="BaseQueryExtendCondition" />
+		</where>
+	</sql>
+
+	<!-- 查询列表 -->
+	<select id="selectList"  resultMap="BaseResultMap">
+		SELECT <include refid="BaseColumnList" /> FROM like_record <include refid="QueryCondition" />
+		<if test="query.orderBy != null and query.orderBy != ''"> order by ${query.orderBy} </if>
+		<if test="query.simplePage != null"> limit #{query.simplePage.start}, #{query.simplePage.end} </if>
+	</select>
+
+	<!-- 查询数量 -->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		 SELECT count(1) FROM like_record <include refid="QueryCondition" />
+	</select>
+
+	<!-- 插入(匹配有效值) -->
+	<insert id="insert">
+		<selectKey keyProperty="opId" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO like_record
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.opType != null">
+				op_type,
+			</if>
+			<if test="bean.objectId != null">
+				object_id,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.createTime != null">
+				create_time,
+			</if>
+			<if test="bean.authorUserId != null">
+				author_user_id,
+			</if>
+		</trim>
+		<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+			<if test="bean.opType != null">
+				#{bean.opType},
+			</if>
+			<if test="bean.objectId != null">
+				#{bean.objectId},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.createTime != null">
+				#{bean.createTime},
+			</if>
+			<if test="bean.authorUserId != null">
+				#{bean.authorUserId},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或者更新(匹配有效值) -->
+	<insert id="insertOrUpdate">
+		INSERT INTO like_record
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.opId != null">
+				op_id,
+			</if>
+			<if test="bean.opType != null">
+				op_type,
+			</if>
+			<if test="bean.objectId != null">
+				object_id,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.createTime != null">
+				create_time,
+			</if>
+			<if test="bean.authorUserId != null">
+				author_user_id,
+			</if>
+		</trim>
+		<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+			<if test="bean.opId != null">
+				#{bean.opId},
+			</if>
+			<if test="bean.opType != null">
+				#{bean.opType},
+			</if>
+			<if test="bean.objectId != null">
+				#{bean.objectId},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.createTime != null">
+				#{bean.createTime},
+			</if>
+			<if test="bean.authorUserId != null">
+				#{bean.authorUserId},
+			</if>
+		</trim>
+		<trim prefix="ON DUPLICATE KEY UPDATE" suffixOverrides=",">
+			<if test="bean.createTime != null">
+				create_time = VALUES(create_time),
+			</if>
+			<if test="bean.authorUserId != null">
+				author_user_id = VALUES(author_user_id),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 添加(批量插入) -->
+	<insert id="insertBatch">
+		INSERT INTO like_record(op_type,object_id,user_id,create_time,author_user_id) VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.opType},#{item.objectId},#{item.userId},#{item.createTime},#{item.authorUserId})
+		</foreach>
+	</insert>
+
+	<!-- 批量插入或更新(覆盖) -->
+	<insert id="insertOrUpdateBatch">
+		INSERT INTO like_record(op_id,op_type,object_id,user_id,create_time,author_user_id) VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.opId},#{item.opType},#{item.objectId},#{item.userId},#{item.createTime},#{item.authorUserId})
+		</foreach>
+		ON DUPLICATE KEY UPDATE
+		op_id = VALUES(op_id),op_type = VALUES(op_type),object_id = VALUES(object_id),user_id = VALUES(user_id),create_time = VALUES(create_time),author_user_id = VALUES(author_user_id)
+	</insert>
+
+	<!-- 根据OpId查询 -->
+	<select id="selectByOpId" resultMap="BaseResultMap">
+		SELECT <include refid="BaseColumnList" /> FROM like_record WHERE op_id = #{opId}
+	</select>
+
+	<!-- 根据OpId更新 -->
+	<update id="updateByOpId">
+		UPDATE like_record
+		<set>
+			<if test="bean.opType != null">
+				op_type = #{bean.opType},
+			</if>
+			<if test="bean.objectId != null">
+				object_id = #{bean.objectId},
+			</if>
+			<if test="bean.userId != null">
+				user_id = #{bean.userId},
+			</if>
+			<if test="bean.createTime != null">
+				create_time = #{bean.createTime},
+			</if>
+			<if test="bean.authorUserId != null">
+				author_user_id = #{bean.authorUserId},
+			</if>
+		</set>
+		WHERE op_id = #{opId}
+	</update>
+
+	<!-- 根据OpId删除 -->
+	<delete id="deleteByOpId">
+		DELETE FROM like_record WHERE op_id = #{opId}
+	</delete>
+
+	<!-- 根据ObjectIdAndUserIdAndOpType查询 -->
+	<select id="selectByObjectIdAndUserIdAndOpType" resultMap="BaseResultMap">
+		SELECT <include refid="BaseColumnList" /> FROM like_record WHERE object_id = #{objectId} and user_id = #{userId} and op_type = #{opType}
+	</select>
+
+	<!-- 根据ObjectIdAndUserIdAndOpType更新 -->
+	<update id="updateByObjectIdAndUserIdAndOpType">
+		UPDATE like_record
+		<set>
+			<if test="bean.opType != null">
+				op_type = #{bean.opType},
+			</if>
+			<if test="bean.objectId != null">
+				object_id = #{bean.objectId},
+			</if>
+			<if test="bean.userId != null">
+				user_id = #{bean.userId},
+			</if>
+			<if test="bean.createTime != null">
+				create_time = #{bean.createTime},
+			</if>
+			<if test="bean.authorUserId != null">
+				author_user_id = #{bean.authorUserId},
+			</if>
+		</set>
+		WHERE object_id = #{objectId} and user_id = #{userId} and op_type = #{opType}
+	</update>
+
+	<!-- 根据ObjectIdAndUserIdAndOpType删除 -->
+	<delete id="deleteByObjectIdAndUserIdAndOpType">
+		DELETE FROM like_record WHERE object_id = #{objectId} and user_id = #{userId} and op_type = #{opType}
+	</delete>
+
+</mapper>

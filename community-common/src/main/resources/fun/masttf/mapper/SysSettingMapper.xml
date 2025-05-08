@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fun.masttf.mapper.SysSettingMapper">
+	<!-- 实体类映射 -->
+	<resultMap id="BaseResultMap" type="fun.masttf.entity.po.SysSetting">
+		<!--编号 -->
+		<id column="code" property="code" />
+		<!--设置信息 -->
+		<result column="json_content" property="jsonContent" />
+	</resultMap>
+
+	<!-- 基础查询列 -->
+	<sql id="BaseColumnList">
+		code,json_content
+	</sql>
+
+	<!-- 基础查询条件 -->
+	<sql id="BaseQueryCondition">
+		<if test="query.code != null and query.code != ''">
+			and code = #{query.code}
+		</if>
+		<if test="query.jsonContent != null and query.jsonContent != ''">
+			and json_content = #{query.jsonContent}
+		</if>
+	</sql>
+
+	<!-- 拓展的查询条件 -->
+	<sql id="BaseQueryExtendCondition">
+		<if test="query.codeFuzzy != null and query.codeFuzzy != ''">
+			and code LIKE CONCAT('%', #{query.codeFuzzy}, '%')
+		</if>
+		<if test="query.jsonContentFuzzy != null and query.jsonContentFuzzy != ''">
+			and json_content LIKE CONCAT('%', #{query.jsonContentFuzzy}, '%')
+		</if>
+	</sql>
+
+	<!-- 通用查询条件 -->
+	<sql id="QueryCondition">
+		<where>
+			<include refid="BaseQueryCondition" />
+			<include refid="BaseQueryExtendCondition" />
+		</where>
+	</sql>
+
+	<!-- 查询列表 -->
+	<select id="selectList"  resultMap="BaseResultMap">
+		SELECT <include refid="BaseColumnList" /> FROM sys_setting <include refid="QueryCondition" />
+		<if test="query.orderBy != null and query.orderBy != ''"> order by ${query.orderBy} </if>
+		<if test="query.simplePage != null"> limit #{query.simplePage.start}, #{query.simplePage.end} </if>
+	</select>
+
+	<!-- 查询数量 -->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		 SELECT count(1) FROM sys_setting <include refid="QueryCondition" />
+	</select>
+
+	<!-- 插入(匹配有效值) -->
+	<insert id="insert">
+		INSERT INTO sys_setting
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.code != null">
+				code,
+			</if>
+			<if test="bean.jsonContent != null">
+				json_content,
+			</if>
+		</trim>
+		<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+			<if test="bean.code != null">
+				#{bean.code},
+			</if>
+			<if test="bean.jsonContent != null">
+				#{bean.jsonContent},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或者更新(匹配有效值) -->
+	<insert id="insertOrUpdate">
+		INSERT INTO sys_setting
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.code != null">
+				code,
+			</if>
+			<if test="bean.jsonContent != null">
+				json_content,
+			</if>
+		</trim>
+		<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+			<if test="bean.code != null">
+				#{bean.code},
+			</if>
+			<if test="bean.jsonContent != null">
+				#{bean.jsonContent},
+			</if>
+		</trim>
+		<trim prefix="ON DUPLICATE KEY UPDATE" suffixOverrides=",">
+			<if test="bean.jsonContent != null">
+				json_content = VALUES(json_content),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 添加(批量插入) -->
+	<insert id="insertBatch">
+		INSERT INTO sys_setting(code,json_content) VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.code},#{item.jsonContent})
+		</foreach>
+	</insert>
+
+	<!-- 批量插入或更新(覆盖) -->
+	<insert id="insertOrUpdateBatch">
+		INSERT INTO sys_setting(code,json_content) VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.code},#{item.jsonContent})
+		</foreach>
+		ON DUPLICATE KEY UPDATE
+		code = VALUES(code),json_content = VALUES(json_content)
+	</insert>
+
+	<!-- 根据Code查询 -->
+	<select id="selectByCode" resultMap="BaseResultMap">
+		SELECT <include refid="BaseColumnList" /> FROM sys_setting WHERE code = #{code}
+	</select>
+
+	<!-- 根据Code更新 -->
+	<update id="updateByCode">
+		UPDATE sys_setting
+		<set>
+			<if test="bean.code != null">
+				code = #{bean.code},
+			</if>
+			<if test="bean.jsonContent != null">
+				json_content = #{bean.jsonContent},
+			</if>
+		</set>
+		WHERE code = #{code}
+	</update>
+
+	<!-- 根据Code删除 -->
+	<delete id="deleteByCode">
+		DELETE FROM sys_setting WHERE code = #{code}
+	</delete>
+
+</mapper>
