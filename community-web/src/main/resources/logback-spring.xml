@@ -75,5 +75,4 @@
         <!-- appender-ref: 引用上面定义的 appender，将日志输出到文件 -->
         <appender-ref ref="file"/>
     </root>
-
 </configuration>
