@@ -1,6 +1,5 @@
 package fun.masttf.service.impl;
 
-import java.beans.Transient;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +18,6 @@ import fun.masttf.entity.po.EmailCode;
 import fun.masttf.entity.po.UserInfo;
 import fun.masttf.entity.query.EmailCodeQuery;
 import fun.masttf.service.EmailCodeService;
-import fun.masttf.service.UserInfoService;
 import fun.masttf.utils.StringTools;
 import fun.masttf.mapper.EmailCodeMapper;
 import fun.masttf.mapper.UserInfoMapper;
@@ -134,21 +132,24 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 		return emailCodeMapper.deleteByEmailAndCode(email, code);
 	}
 
+	/*
+	 * 发送邮箱验证码
+	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void sendEmailCode(String email, Integer type) {
-		if (type == Constans.ZERO) {
+		if (type == 0) {
 			UserInfo userInfo = userInfoMapper.selectByEmail(email);
 			if (userInfo != null) {
 				throw new BusinessException("邮箱已存在");
 			}
 			String code = StringTools.getRandomString(Constans.LENGTH_5);
 			sendEmailCodeDo(email, code);
-			EmailCode emailCode = new EmailCode();
 			emailCodeMapper.disableEmailCode(email);
+			EmailCode emailCode = new EmailCode();
 			emailCode.setEmail(email);
 			emailCode.setCode(code);
-			emailCode.setStatus(Constans.ZERO);
+			emailCode.setStatus(0);
 			emailCode.setCreateTime(new Date());
 			emailCodeMapper.insert(emailCode);
 		}
@@ -169,5 +170,20 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 			logger.error("发送邮箱验证码失败", e);
 			throw new BusinessException("发送邮箱验证码失败");
 		}
+	}
+
+	@Override
+	public void checkCode(String email, String emailcode) {
+		EmailCode emailCode = emailCodeMapper.selectByEmailAndCode(email, emailcode);
+		if (emailCode != null) {
+			if (emailCode.getStatus() == 1
+					|| emailCode.getCreateTime().getTime() + Constans.LENGTH_10 * 60 * 1000 < System
+							.currentTimeMillis()) {
+				throw new BusinessException("验证码已失效");
+			}
+		} else {
+			throw new BusinessException("验证码不匹配");
+		}
+		emailCodeMapper.disableEmailCode(email);
 	}
 }

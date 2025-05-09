@@ -88,4 +88,6 @@ public interface UserInfoService {
 	 */
 	Integer deleteByNickName(String nickName);
 
+	void register(String email, String emailCode, String nickName, String password);
+
 }

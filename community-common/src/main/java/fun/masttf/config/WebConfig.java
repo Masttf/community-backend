@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class WebConfig extends AppCOnfig {
-    @Value("${spring.mail.username}:")
+    @Value("${spring.mail.username:}")
     private String sendUserName;
 
     public String getSendUserName() {

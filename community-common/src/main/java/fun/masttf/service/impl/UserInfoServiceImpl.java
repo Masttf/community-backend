@@ -1,15 +1,21 @@
 package fun.masttf.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.exception.BusinessException;
 import fun.masttf.entity.po.UserInfo;
 import fun.masttf.entity.query.UserInfoQuery;
+import fun.masttf.service.EmailCodeService;
 import fun.masttf.service.UserInfoService;
+import fun.masttf.utils.StringTools;
 import fun.masttf.mapper.UserInfoMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.enums.PageSize;
+import fun.masttf.entity.enums.UserStatusEnum;
 
 /**
  * @Description:用户信息Serviece
@@ -19,6 +25,9 @@ import fun.masttf.entity.enums.PageSize;
  */
 @Service("userInfoService")
 public class UserInfoServiceImpl implements UserInfoService {
+
+	@Autowired
+	private EmailCodeService emailCodeService;
 
 	@Autowired
 	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
@@ -49,7 +58,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
 		query.setSimplePage(page);
 		List<UserInfo> list = userInfoMapper.selectList(query);
-		PaginationResultVo<UserInfo> result = new PaginationResultVo<UserInfo>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+		PaginationResultVo<UserInfo> result = new PaginationResultVo<UserInfo>(count, page.getPageSize(),
+				page.getPageNo(), page.getPageTotal(), list);
 		return result;
 	}
 
@@ -66,7 +76,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 	 */
 	@Override
 	public Integer addBatch(List<UserInfo> listBean) {
-		if(listBean == null || listBean.isEmpty()) {
+		if (listBean == null || listBean.isEmpty()) {
 			return 0;
 		}
 		return userInfoMapper.insertBatch(listBean);
@@ -77,7 +87,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 	 */
 	@Override
 	public Integer addOrUpdateBatch(List<UserInfo> listBean) {
-		if(listBean == null || listBean.isEmpty()) {
+		if (listBean == null || listBean.isEmpty()) {
 			return 0;
 		}
 		return userInfoMapper.insertOrUpdateBatch(listBean);
@@ -155,4 +165,27 @@ public class UserInfoServiceImpl implements UserInfoService {
 		return userInfoMapper.deleteByNickName(nickName);
 	}
 
+	@Override
+	public void register(String email, String emailCode, String nickName, String password) {
+		UserInfo userInfo = userInfoMapper.selectByEmail(email);
+		if (userInfo != null) {
+			throw new BusinessException("邮箱已存在");
+		}
+		userInfo = userInfoMapper.selectByNickName(nickName);
+		if (userInfo != null) {
+			throw new BusinessException("昵称已存在");
+		}
+		emailCodeService.checkCode(email, emailCode);
+		String userId = StringTools.getRandomNumber(Constans.LENGTH_10);
+		UserInfo bean = new UserInfo();
+		bean.setUserId(userId);
+		bean.setEmail(email);
+		bean.setNickName(nickName);
+		bean.setPassword(StringTools.encodeMd5(password));
+		bean.setStatus(UserStatusEnum.NORMAL.getStatus());
+		bean.setJoinTime(new Date());
+		bean.setCurrentIntegral(0);
+		bean.setTotalIntegral(0);
+		userInfoMapper.insert(bean);
+	}
 }

@@ -29,3 +29,5 @@ logs/
 .localized
 
 .roo/*
+
+application-secret.yaml
