@@ -25,5 +25,5 @@ public interface EmailCodeMapper<T, P> extends BaseMapper<T, P> {
 	 */
 	Integer deleteByEmailAndCode(@Param("email") String email, @Param("code") String code);
 
-
+	void disableEmailCode(@Param("email") String email);
 }

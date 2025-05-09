@@ -192,4 +192,9 @@
 		DELETE FROM email_code WHERE email = #{email} and code = #{code}
 	</delete>
 
+	<update id="disableEmailCode">
+		UPDATE email_code
+		SET status = 1
+		WHERE email = #{email} and status = 0
+	</update>
 </mapper>

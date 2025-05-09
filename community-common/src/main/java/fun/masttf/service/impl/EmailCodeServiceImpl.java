@@ -1,14 +1,32 @@
 package fun.masttf.service.impl;
 
+import java.beans.Transient;
+import java.util.Date;
 import java.util.List;
+
+import javax.mail.internet.MimeMessage;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.exception.BusinessException;
 import fun.masttf.entity.po.EmailCode;
+import fun.masttf.entity.po.UserInfo;
 import fun.masttf.entity.query.EmailCodeQuery;
 import fun.masttf.service.EmailCodeService;
+import fun.masttf.service.UserInfoService;
+import fun.masttf.utils.StringTools;
 import fun.masttf.mapper.EmailCodeMapper;
+import fun.masttf.mapper.UserInfoMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.entity.query.UserInfoQuery;
+import fun.masttf.config.WebConfig;
+import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.enums.PageSize;
 
 /**
@@ -19,9 +37,17 @@ import fun.masttf.entity.enums.PageSize;
  */
 @Service("emailCodeService")
 public class EmailCodeServiceImpl implements EmailCodeService {
-
+	private static final Logger logger = org.slf4j.LoggerFactory.getLogger(EmailCodeServiceImpl.class);
 	@Autowired
 	private EmailCodeMapper<EmailCode, EmailCodeQuery> emailCodeMapper;
+
+	@Autowired
+	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
+
+	@Autowired
+	private JavaMailSender javaMailSender;
+	@Autowired
+	private WebConfig webConfig;
 
 	/**
 	 * 根据条件查询列表
@@ -49,7 +75,8 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
 		query.setSimplePage(page);
 		List<EmailCode> list = emailCodeMapper.selectList(query);
-		PaginationResultVo<EmailCode> result = new PaginationResultVo<EmailCode>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+		PaginationResultVo<EmailCode> result = new PaginationResultVo<EmailCode>(count, page.getPageSize(),
+				page.getPageNo(), page.getPageTotal(), list);
 		return result;
 	}
 
@@ -66,7 +93,7 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 	 */
 	@Override
 	public Integer addBatch(List<EmailCode> listBean) {
-		if(listBean == null || listBean.isEmpty()) {
+		if (listBean == null || listBean.isEmpty()) {
 			return 0;
 		}
 		return emailCodeMapper.insertBatch(listBean);
@@ -77,7 +104,7 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 	 */
 	@Override
 	public Integer addOrUpdateBatch(List<EmailCode> listBean) {
-		if(listBean == null || listBean.isEmpty()) {
+		if (listBean == null || listBean.isEmpty()) {
 			return 0;
 		}
 		return emailCodeMapper.insertOrUpdateBatch(listBean);
@@ -107,4 +134,40 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 		return emailCodeMapper.deleteByEmailAndCode(email, code);
 	}
 
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void sendEmailCode(String email, Integer type) {
+		if (type == Constans.ZERO) {
+			UserInfo userInfo = userInfoMapper.selectByEmail(email);
+			if (userInfo != null) {
+				throw new BusinessException("邮箱已存在");
+			}
+			String code = StringTools.getRandomString(Constans.LENGTH_5);
+			sendEmailCodeDo(email, code);
+			EmailCode emailCode = new EmailCode();
+			emailCodeMapper.disableEmailCode(email);
+			emailCode.setEmail(email);
+			emailCode.setCode(code);
+			emailCode.setStatus(Constans.ZERO);
+			emailCode.setCreateTime(new Date());
+			emailCodeMapper.insert(emailCode);
+		}
+	}
+
+	private void sendEmailCodeDo(String email, String code) {
+		try {
+			MimeMessage message = javaMailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+			helper.setFrom(webConfig.getSendUserName());
+			helper.setTo(email);
+			helper.setSubject("注册邮箱验证码");
+			helper.setText("您的验证码是：" + code);
+			helper.setSentDate(new Date());
+			javaMailSender.send(message);
+		} catch (Exception e) {
+			logger.error("发送邮箱验证码失败", e);
+			throw new BusinessException("发送邮箱验证码失败");
+		}
+	}
 }
