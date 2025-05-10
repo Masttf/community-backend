@@ -531,4 +531,13 @@
 		DELETE FROM user_info WHERE nick_name = #{nickName}
 	</delete>
 
+	<update id="updateIntegral">
+		UPDATE user_info set current_integral = current_integral + #{integral}
+		<if test="integral > 0">
+			, total_integral = total_integral + #{integral}
+		</if>
+		WHERE user_id = #{userId}
+		<![CDATA[ and current_integral + #{integral} >= 0 ]]>
+	</update>
+		
 </mapper>

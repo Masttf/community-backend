@@ -2,6 +2,7 @@ package fun.masttf.service;
 
 import java.util.List;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.entity.enums.UserIntegralOperTypeEnum;
 import fun.masttf.entity.po.UserInfo;
 import fun.masttf.entity.query.UserInfoQuery;
 
@@ -90,4 +91,5 @@ public interface UserInfoService {
 
 	void register(String email, String emailCode, String nickName, String password);
 
+	void updateUserIntegral(String userId, UserIntegralOperTypeEnum operTypeEnum, Integer changeType, Integer integral);
 }

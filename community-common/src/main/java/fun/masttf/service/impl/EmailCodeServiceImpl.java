@@ -182,7 +182,7 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 				throw new BusinessException("验证码已失效");
 			}
 		} else {
-			throw new BusinessException("验证码不匹配");
+			throw new BusinessException("邮箱验证码不匹配");
 		}
 		emailCodeMapper.disableEmailCode(email);
 	}

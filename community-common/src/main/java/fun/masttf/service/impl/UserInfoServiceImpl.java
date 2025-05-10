@@ -7,24 +7,30 @@ import javax.jws.soap.SOAPBinding.Use;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.tomcat.jni.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.entity.po.UserInfo;
+import fun.masttf.entity.po.UserIntegralRecord;
 import fun.masttf.entity.po.UserMessage;
 import fun.masttf.entity.query.UserInfoQuery;
+import fun.masttf.entity.query.UserIntegralRecordQuery;
 import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.service.EmailCodeService;
 import fun.masttf.service.UserInfoService;
 import fun.masttf.utils.StringTools;
 import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.UserInfoMapper;
+import fun.masttf.mapper.UserIntegralRecordMapper;
 import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.enums.MessageStatusEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
+import fun.masttf.entity.enums.UserIntegralChangeTypeEnum;
+import fun.masttf.entity.enums.UserIntegralOperTypeEnum;
 import fun.masttf.entity.enums.UserStatusEnum;
 
 /**
@@ -45,6 +51,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 	@Autowired
 	private UserMessageMapper<UserMessage, UserMessageQuery> userMessageMapper;
 
+	@Autowired
+	private UserIntegralRecordMapper<UserIntegralRecord, UserIntegralRecordQuery> userIntegralRecordMapper;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -201,6 +209,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 		bean.setCurrentIntegral(0);
 		bean.setTotalIntegral(0);
 		userInfoMapper.insert(bean);
+		//更新用户积分
+		updateUserIntegral(userId, UserIntegralOperTypeEnum.REGISTER, UserIntegralChangeTypeEnum.ADD.getChangeType(), Constans.INTEGRAL_5);
 
 		// 记录消息
 		UserMessage userMessage = new UserMessage();
@@ -211,5 +221,32 @@ public class UserInfoServiceImpl implements UserInfoService {
 		userMessage.setMessageContent(SysCacheUtils.getSysSetting().getRegisterSetting().getRegisterWelcomeInfo());
 		userMessageMapper.insert(userMessage);
 	}
-	
+	/*
+	 * 更新用户积分
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateUserIntegral(String userId, UserIntegralOperTypeEnum operTypeEnum, Integer changeType, Integer integral) {
+		integral = changeType * integral;
+		if(integral == 0){
+			return ;
+		}
+		UserInfo userInfo = userInfoMapper.selectByUserId(userId);
+		if(UserIntegralChangeTypeEnum.REDUCE.getChangeType().equals(changeType) && userInfo.getCurrentIntegral() + integral < 0){
+			integral = changeType * userInfo.getCurrentIntegral();
+		}
+
+		UserIntegralRecord record = new UserIntegralRecord();
+		record.setUserId(userId);
+		record.setOperType(operTypeEnum.getOperType());
+		record.setCreateTime(new Date());
+		record.setIntegral(integral);
+		userIntegralRecordMapper.insert(record);
+		//在数据库判断减后积分要>=0
+		//如果不行事物会滚
+		Integer res = userInfoMapper.updateIntegral(userId, integral);
+		if(res == 0){
+			throw new BusinessException("更新用户积分失败");
+		}
+	}
 }

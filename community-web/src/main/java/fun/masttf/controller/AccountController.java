@@ -85,6 +85,9 @@ public class AccountController extends ABaseController {
             if (!code.equals(checkCode)) {
                 throw new BusinessException("验证码错误");
             }
+            System.out.println("________________________");
+            System.out.println("email: " + email);
+            System.out.println("________________________");
             userInfoService.register(email, emailCode, nickName, password);
             return getSuccessResponseVo(null);
         } finally {
