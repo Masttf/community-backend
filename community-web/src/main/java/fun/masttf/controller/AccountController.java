@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import fun.masttf.annotation.GlobalInterceptor;
+import fun.masttf.aspect.VerifyParam;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.CreateImageCode;
 import fun.masttf.entity.enums.ResponseCodeEnum;
+import fun.masttf.entity.enums.VerifyRegexEnum;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.service.EmailCodeService;
@@ -53,11 +56,12 @@ public class AccountController extends ABaseController {
     }
 
     @RequestMapping("/sendEmail")
-    public ResponseVo<Object> sendEmail(HttpSession session, String email, String checkCode, Integer type) {
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVo<Object> sendEmail(HttpSession session, 
+                    @VerifyParam(required = true) String email, 
+                    @VerifyParam(required = true) String checkCode, 
+                    @VerifyParam(required = true)Integer type) {
         try {
-            if (StringTools.isEmpty(email) || StringTools.isEmpty(checkCode) || type == null) {
-                throw new BusinessException(ResponseCodeEnum.CODE_600);
-            }
             String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY_EMAIL);
             if (!code.equals(checkCode)) {
                 throw new BusinessException("验证码错误");
@@ -74,20 +78,18 @@ public class AccountController extends ABaseController {
      * 注册
      */
     @RequestMapping("/register")
-    public ResponseVo<Object> register(HttpSession session, String email, String emailCode, String nickName,
-            String password, String checkCode) {
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVo<Object> register(HttpSession session,
+            @VerifyParam(required = true, regex = VerifyRegexEnum.EMAIL) String email, 
+            @VerifyParam(required = true) String emailCode, 
+            @VerifyParam(required = true, max = 20) String nickName,
+            @VerifyParam(required = true, min = 8, max = 18, regex = VerifyRegexEnum.PASSWORD) String password, 
+            @VerifyParam(required = true) String checkCode) {
         try {
-            if (StringTools.isEmpty(email) || StringTools.isEmpty(emailCode) || StringTools.isEmpty(nickName)
-                    || StringTools.isEmpty(password) || StringTools.isEmpty(checkCode)) {
-                throw new BusinessException(ResponseCodeEnum.CODE_600);
-            }
             String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
             if (!code.equals(checkCode)) {
                 throw new BusinessException("验证码错误");
             }
-            System.out.println("________________________");
-            System.out.println("email: " + email);
-            System.out.println("________________________");
             userInfoService.register(email, emailCode, nickName, password);
             return getSuccessResponseVo(null);
         } finally {
