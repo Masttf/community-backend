@@ -1,5 +1,7 @@
 package fun.masttf.service.impl;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +9,14 @@ import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.entity.po.SysSetting;
 import fun.masttf.entity.query.SysSettingQuery;
 import fun.masttf.service.SysSettingService;
+import fun.masttf.utils.JsonUtils;
+import fun.masttf.utils.StringTools;
+import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.SysSettingMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.entity.dto.SysSettingDto;
 import fun.masttf.entity.enums.PageSize;
+import fun.masttf.entity.enums.SysSettingCodeEnum;
 
 /**
  * @Description:系统设置信息Serviece
@@ -19,7 +26,7 @@ import fun.masttf.entity.enums.PageSize;
  */
 @Service("sysSettingService")
 public class SysSettingServiceImpl implements SysSettingService {
-
+	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SysSettingServiceImpl.class);
 	@Autowired
 	private SysSettingMapper<SysSetting, SysSettingQuery> sysSettingMapper;
 
@@ -49,7 +56,8 @@ public class SysSettingServiceImpl implements SysSettingService {
 		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
 		query.setSimplePage(page);
 		List<SysSetting> list = sysSettingMapper.selectList(query);
-		PaginationResultVo<SysSetting> result = new PaginationResultVo<SysSetting>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+		PaginationResultVo<SysSetting> result = new PaginationResultVo<SysSetting>(count, page.getPageSize(),
+				page.getPageNo(), page.getPageTotal(), list);
 		return result;
 	}
 
@@ -66,7 +74,7 @@ public class SysSettingServiceImpl implements SysSettingService {
 	 */
 	@Override
 	public Integer addBatch(List<SysSetting> listBean) {
-		if(listBean == null || listBean.isEmpty()) {
+		if (listBean == null || listBean.isEmpty()) {
 			return 0;
 		}
 		return sysSettingMapper.insertBatch(listBean);
@@ -77,7 +85,7 @@ public class SysSettingServiceImpl implements SysSettingService {
 	 */
 	@Override
 	public Integer addOrUpdateBatch(List<SysSetting> listBean) {
-		if(listBean == null || listBean.isEmpty()) {
+		if (listBean == null || listBean.isEmpty()) {
 			return 0;
 		}
 		return sysSettingMapper.insertOrUpdateBatch(listBean);
@@ -107,4 +115,27 @@ public class SysSettingServiceImpl implements SysSettingService {
 		return sysSettingMapper.deleteByCode(code);
 	}
 
+	@Override
+	public void refreshCache() {
+		try {
+			SysSettingDto sysSettingDto = new SysSettingDto();
+			List<SysSetting> list = sysSettingMapper.selectList(new SysSettingQuery());
+			for (SysSetting sysSetting : list) {
+				String JsonContent = sysSetting.getJsonContent();
+				if (StringTools.isEmpty(JsonContent))
+					continue;
+				String code = sysSetting.getCode();
+				SysSettingCodeEnum setting = SysSettingCodeEnum.getByCode(code);
+				PropertyDescriptor pd = new PropertyDescriptor(setting.getPropName(), SysSettingDto.class);
+				Method method = pd.getWriteMethod();
+				Class<?> subClass = Class.forName(setting.getClassz());
+				method.invoke(sysSettingDto, JsonUtils.convertJson2Obj(JsonContent, subClass));
+
+			}
+			SysCacheUtils.refresh(sysSettingDto);
+
+		} catch (Exception e) {
+			logger.error("刷新系统设置信息缓存失败", e);
+		}
+	}
 }

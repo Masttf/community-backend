@@ -77,9 +77,6 @@ public class AccountController extends ABaseController {
     public ResponseVo<Object> register(HttpSession session, String email, String emailCode, String nickName,
             String password, String checkCode) {
         try {
-            System.out.println(
-                    "email:" + email + " emailCode:" + emailCode + " nickName:" + nickName + " password:" + password
-                            + " checkCode:" + checkCode);
             if (StringTools.isEmpty(email) || StringTools.isEmpty(emailCode) || StringTools.isEmpty(nickName)
                     || StringTools.isEmpty(password) || StringTools.isEmpty(checkCode)) {
                 throw new BusinessException(ResponseCodeEnum.CODE_600);

@@ -2,18 +2,28 @@ package fun.masttf.service.impl;
 
 import java.util.Date;
 import java.util.List;
+
+import javax.jws.soap.SOAPBinding.Use;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.entity.po.UserInfo;
+import fun.masttf.entity.po.UserMessage;
 import fun.masttf.entity.query.UserInfoQuery;
+import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.service.EmailCodeService;
 import fun.masttf.service.UserInfoService;
 import fun.masttf.utils.StringTools;
+import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.UserInfoMapper;
+import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
 import fun.masttf.entity.constans.Constans;
+import fun.masttf.entity.enums.MessageStatusEnum;
+import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
 import fun.masttf.entity.enums.UserStatusEnum;
 
@@ -31,6 +41,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	@Autowired
 	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
+
+	@Autowired
+	private UserMessageMapper<UserMessage, UserMessageQuery> userMessageMapper;
 
 	/**
 	 * 根据条件查询列表
@@ -166,6 +179,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void register(String email, String emailCode, String nickName, String password) {
 		UserInfo userInfo = userInfoMapper.selectByEmail(email);
 		if (userInfo != null) {
@@ -187,5 +201,15 @@ public class UserInfoServiceImpl implements UserInfoService {
 		bean.setCurrentIntegral(0);
 		bean.setTotalIntegral(0);
 		userInfoMapper.insert(bean);
+
+		// 记录消息
+		UserMessage userMessage = new UserMessage();
+		userMessage.setReceivedUserId(userId);
+		userMessage.setMessageType(MessageTypeEnum.SYS.getType());
+		userMessage.setCreateTime(new Date());
+		userMessage.setStatus(MessageStatusEnum.NO_READ.getStatus());
+		userMessage.setMessageContent(SysCacheUtils.getSysSetting().getRegisterSetting().getRegisterWelcomeInfo());
+		userMessageMapper.insert(userMessage);
 	}
+	
 }
