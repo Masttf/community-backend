@@ -1,6 +1,8 @@
 package fun.masttf.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.mail.Session;
 import javax.servlet.http.HttpServletRequest;
@@ -17,11 +19,15 @@ import fun.masttf.aspect.VerifyParam;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.CreateImageCode;
 import fun.masttf.entity.dto.SessionWebUserDto;
+import fun.masttf.entity.dto.SysSetting4CommentDto;
+import fun.masttf.entity.dto.SysSettingDto;
 import fun.masttf.entity.enums.VerifyRegexEnum;
+import fun.masttf.entity.po.SysSetting;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.service.EmailCodeService;
 import fun.masttf.service.UserInfoService;
+import fun.masttf.utils.SysCacheUtils;
 
 @RestController
 public class AccountController extends ABaseController {
@@ -121,10 +127,25 @@ public class AccountController extends ABaseController {
     }
 
     /*
-     * 获取用户信息
+     * 获取登录用户信息
      */
     @RequestMapping("/getUserInfo")
     public ResponseVo<Object> getUserInfo(HttpSession session) {
         return getSuccessResponseVo(getUserInfoSession(session));
+    }
+
+    @RequestMapping("/logout")
+    public ResponseVo<Object> logout(HttpSession session) {
+        session.invalidate();
+        return getSuccessResponseVo(null);
+    }
+
+    @RequestMapping("/getSysSetting")
+    public ResponseVo<Object> getSysSetting() {
+        SysSettingDto sttingDto = SysCacheUtils.getSysSetting();
+        SysSetting4CommentDto commentDto = sttingDto.getCommentSetting();
+        Map<String, Object> result = new HashMap<>();
+        result.put("commentOpen", commentDto.getCommentOpen());
+        return getSuccessResponseVo(result);
     }
 }
