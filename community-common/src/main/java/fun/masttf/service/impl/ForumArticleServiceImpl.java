@@ -4,12 +4,17 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.exception.BusinessException;
 import fun.masttf.entity.po.ForumArticle;
 import fun.masttf.entity.query.ForumArticleQuery;
 import fun.masttf.service.ForumArticleService;
 import fun.masttf.mapper.ForumArticleMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.entity.constans.Constans;
+import fun.masttf.entity.enums.ArticleStatusEnum;
 import fun.masttf.entity.enums.PageSize;
+import fun.masttf.entity.enums.ResponseCodeEnum;
+import fun.masttf.entity.enums.UpdateArticleCountTypeEnum;
 
 /**
  * @Description:文章信息Serviece
@@ -107,4 +112,16 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 		return forumArticleMapper.deleteByArticleId(articleId);
 	}
 
+	@Override
+	public ForumArticle readArticle(String articleId) {
+		ForumArticle article = forumArticleMapper.selectByArticleId(articleId);
+		if (article == null) {
+			throw new BusinessException(ResponseCodeEnum.CODE_404);
+		}
+		if(ArticleStatusEnum.AUDIT.getStatus().equals(article.getStatus())) {
+			forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.READ_COUNT.getType(), Constans.ONE, articleId);
+			article.setReadCount(article.getReadCount() + Constans.ONE);
+		}
+		return article;
+	}
 }

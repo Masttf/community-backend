@@ -57,5 +57,6 @@ public interface ForumArticleService {
 	 * 根据ArticleId删除
 	 */
 	Integer deleteByArticleId(String articleId);
-
+	
+	ForumArticle readArticle(String articleId);
 }
