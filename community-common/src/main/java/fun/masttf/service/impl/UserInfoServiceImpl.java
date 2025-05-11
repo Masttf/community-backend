@@ -297,4 +297,17 @@ public class UserInfoServiceImpl implements UserInfoService {
 		}
 		return Constans.NO_ADDRESS;
 	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void resetPwd(String email, String emailCode, String password) {
+		UserInfo userInfo = userInfoMapper.selectByEmail(email);
+		if (userInfo != null) {
+			throw new BusinessException("邮箱已存在");
+		}
+		emailCodeService.checkCode(email, emailCode);
+		UserInfo bean = new UserInfo();
+		bean.setPassword(StringTools.encodeMd5(password));
+		userInfoMapper.updateByEmail(bean, emailCode);
+	}
 }

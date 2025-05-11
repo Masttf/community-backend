@@ -119,7 +119,7 @@ public class AccountController extends ABaseController {
             }
             SessionWebUserDto sessionWebUserDto = userInfoService.login(email, password, getIpAddr(request));
             session.setAttribute(Constans.SESSION_KEY, sessionWebUserDto);
-            return getSuccessResponseVo(null);
+            return getSuccessResponseVo(sessionWebUserDto);
         } finally {
             // 清除验证码
             session.removeAttribute(Constans.CHECK_CODE_KEY);
@@ -147,5 +147,25 @@ public class AccountController extends ABaseController {
         Map<String, Object> result = new HashMap<>();
         result.put("commentOpen", commentDto.getCommentOpen());
         return getSuccessResponseVo(result);
+    }
+
+    @RequestMapping("/resetPwd")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVo<Object> resetPwd(HttpSession session,
+            @VerifyParam(required = true) String email, 
+            @VerifyParam(required = true) String emailCode, 
+            @VerifyParam(required = true, min = 8, max = 18, regex = VerifyRegexEnum.PASSWORD) String password, 
+            @VerifyParam(required = true) String checkCode) {
+        try {
+            String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
+            if (!code.equals(checkCode)) {
+                throw new BusinessException("图片验证码错误");
+            }
+            userInfoService.resetPwd(email, emailCode, password);
+            return getSuccessResponseVo(null);
+        } finally {
+            // 清除验证码
+            session.removeAttribute(Constans.CHECK_CODE_KEY);
+        }
     }
 }

@@ -138,21 +138,21 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void sendEmailCode(String email, Integer type) {
-		if (type == 0) {
+		if (type == Constans.ZERO) { // 注册
 			UserInfo userInfo = userInfoMapper.selectByEmail(email);
 			if (userInfo != null) {
 				throw new BusinessException("邮箱已存在");
 			}
-			String code = StringTools.getRandomString(Constans.LENGTH_5);
-			sendEmailCodeDo(email, code);
-			emailCodeMapper.disableEmailCode(email);
-			EmailCode emailCode = new EmailCode();
-			emailCode.setEmail(email);
-			emailCode.setCode(code);
-			emailCode.setStatus(0);
-			emailCode.setCreateTime(new Date());
-			emailCodeMapper.insert(emailCode);
 		}
+		String code = StringTools.getRandomString(Constans.LENGTH_5);
+		sendEmailCodeDo(email, code);
+		emailCodeMapper.disableEmailCode(email);
+		EmailCode emailCode = new EmailCode();
+		emailCode.setEmail(email);
+		emailCode.setCode(code);
+		emailCode.setStatus(0);
+		emailCode.setCreateTime(new Date());
+		emailCodeMapper.insert(emailCode);
 	}
 
 	private void sendEmailCodeDo(String email, String code) {
