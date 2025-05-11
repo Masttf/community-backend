@@ -3,8 +3,12 @@ package fun.masttf.controller;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
 
+import javax.mail.Session;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
+import fun.masttf.entity.constans.Constans;
+import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 public class ABaseController {
     protected static final String STATUC_SUCCESS = "success";
@@ -69,5 +73,9 @@ public class ABaseController {
             ip = request.getRemoteAddr();
         }
         return ip;
+    }
+
+    protected SessionWebUserDto getUserInfoSession(HttpSession session) {
+        return (SessionWebUserDto) session.getAttribute(Constans.SESSION_KEY);
     }
 }

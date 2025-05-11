@@ -3,6 +3,7 @@ package fun.masttf.controller;
 import java.io.IOException;
 
 import javax.mail.Session;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -101,6 +102,7 @@ public class AccountController extends ABaseController {
     @RequestMapping("/login")
     @GlobalInterceptor(checkParams = true)
     public ResponseVo<Object> login(HttpSession session,
+            HttpServletRequest request,
             @VerifyParam(required = true) String email, 
             @VerifyParam(required = true) String password, 
             @VerifyParam(required = true) String checkCode) {
@@ -109,12 +111,20 @@ public class AccountController extends ABaseController {
             if (!code.equals(checkCode)) {
                 throw new BusinessException("图片验证码错误");
             }
-            SessionWebUserDto sessionWebUserDto = userInfoService.login(email, password, "");
-            
+            SessionWebUserDto sessionWebUserDto = userInfoService.login(email, password, getIpAddr(request));
+            session.setAttribute(Constans.SESSION_KEY, sessionWebUserDto);
             return getSuccessResponseVo(null);
         } finally {
             // 清除验证码
             session.removeAttribute(Constans.CHECK_CODE_KEY);
         }
+    }
+
+    /*
+     * 获取用户信息
+     */
+    @RequestMapping("/getUserInfo")
+    public ResponseVo<Object> getUserInfo(HttpSession session) {
+        return getSuccessResponseVo(getUserInfoSession(session));
     }
 }

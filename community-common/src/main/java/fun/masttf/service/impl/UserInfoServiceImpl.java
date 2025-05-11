@@ -259,7 +259,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 	@Override
 	public SessionWebUserDto login(String email, String password, String ip) {
 		UserInfo userInfo = userInfoMapper.selectByEmail(email);
-		if(userInfo == null || !userInfo.getPassword().equals(StringTools.encodeMd5(password))){
+		// logger.info(userInfo.toString());
+		if(userInfo == null || !userInfo.getPassword().equals(password)){
 			throw new BusinessException("账号或密码错误");
 		}
 		if(userInfo.getStatus() == UserStatusEnum.DISABLE.getStatus()){
