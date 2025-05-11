@@ -1,6 +1,7 @@
 package fun.masttf.entity.po;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description:文章板块信息
@@ -44,6 +45,24 @@ public class ForumBoard implements Serializable {
 	 * 0:只允许管理员发帖 1:任何人可以发帖
 	 */
 	private Integer postType;
+
+	public Integer getpBoardId() {
+		return pBoardId;
+	}
+
+	public void setpBoardId(Integer pBoardId) {
+		this.pBoardId = pBoardId;
+	}
+
+	public List<ForumBoard> getChildren() {
+		return children;
+	}
+
+	public void setChildren(List<ForumBoard> children) {
+		this.children = children;
+	}
+
+	private List<ForumBoard> children;
 
 	public Integer getBoardId() {
 		return this.boardId;

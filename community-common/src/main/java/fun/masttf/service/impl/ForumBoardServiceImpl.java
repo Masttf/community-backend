@@ -1,5 +1,6 @@
 package fun.masttf.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,4 +108,23 @@ public class ForumBoardServiceImpl implements ForumBoardService {
 		return forumBoardMapper.deleteByBoardId(boardId);
 	}
 
+	@Override
+	public List<ForumBoard> getBoardTree(Integer postType) {
+		ForumBoardQuery query = new ForumBoardQuery();
+		query.setOrderBy("sort asc");
+		query.setPostType(postType);
+		List<ForumBoard> list = forumBoardMapper.selectList(query);
+		return convertLine2Tree(list, 0);
+	}
+
+	private List<ForumBoard> convertLine2Tree(List<ForumBoard> datalist, Integer pid) {
+		List<ForumBoard> children = new ArrayList<>();
+		for (ForumBoard m : datalist) {
+			if(m.getPBoardId().equals(pid)) {
+				m.setChildren(convertLine2Tree(datalist, m.getBoardId()));
+				children.add(m);
+			}
+		}
+		return children;
+	}
 }
