@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.service.ForumBoardService;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController

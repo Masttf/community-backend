@@ -1,7 +1,9 @@
 package fun.masttf.controller;
 
+import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
+import fun.masttf.utils.CopyTools;
 
 import javax.mail.Session;
 import javax.servlet.http.HttpServletRequest;
@@ -77,5 +79,15 @@ public class ABaseController {
 
     protected SessionWebUserDto getUserInfoSession(HttpSession session) {
         return (SessionWebUserDto) session.getAttribute(Constans.SESSION_KEY);
+    }
+
+    protected <S, T> PaginationResultVo<T> convert2PaginationVo(PaginationResultVo<S> result, Class<T> clazz) {
+        PaginationResultVo<T> resultVo = new PaginationResultVo<T>();
+        resultVo.setList(CopyTools.copyList(result.getList(), clazz));
+        resultVo.setPageNo(result.getPageNo());
+        resultVo.setPageSize(result.getPageSize());
+        resultVo.setPageTotal(result.getPageTotal());
+        resultVo.setTotalCount(result.getTotalCount());
+        return resultVo;
     }
 }

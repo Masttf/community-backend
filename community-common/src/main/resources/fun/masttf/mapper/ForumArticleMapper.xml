@@ -51,7 +51,7 @@
 
 	<!-- 基础查询列 -->
 	<sql id="BaseColumnList">
-		article_id,board_id,board_name,p_board_id,p_board_name,user_id,nick_name,user_ip_address,title,cover,content,markdown_content,editor_type,summary,post_time,last_update_time,read_count,good_count,comment_count,top_type,attachment_type,status
+		article_id,board_id,board_name,p_board_id,p_board_name,user_id,nick_name,user_ip_address,title,cover,editor_type,summary,post_time,last_update_time,read_count,good_count,comment_count,top_type,attachment_type,status
 	</sql>
 
 	<!-- 基础查询条件 -->
@@ -170,6 +170,9 @@
 		</if>
 		<if test="query.lastUpdateTimeEnd != null and query.lastUpdateTimeEnd != ''">
 			<![CDATA[ and last_update_time < DATE_ADD(str_to_date(#{query.lastUpdateTimeEnd},'%Y-%m-%d'), INTERVAL 1 DAY) ]]>
+		</if>
+		<if test="query.currentUserId != null">
+			and (status = 1 or (status = 0 and user_id = #{query.currentUserId}))
 		</if>
 	</sql>
 
@@ -560,7 +563,7 @@
 
 	<!-- 根据ArticleId查询 -->
 	<select id="selectByArticleId" resultMap="BaseResultMap">
-		SELECT <include refid="BaseColumnList" /> FROM forum_article WHERE article_id = #{articleId}
+		SELECT <include refid="BaseColumnList" />,content,markdown_content FROM forum_article WHERE article_id = #{articleId}
 	</select>
 
 	<!-- 根据ArticleId更新 -->

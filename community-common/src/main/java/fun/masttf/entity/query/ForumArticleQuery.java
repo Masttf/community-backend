@@ -48,10 +48,43 @@ public class ForumArticleQuery extends BaseQuery {
 
 	private String userIdFuzzy;
 
+	private String currentUserId;
 	/**
 	 * 昵称
 	 */
 	private String nickName;
+
+	public Integer getpBoardId() {
+		return pBoardId;
+	}
+
+	public void setpBoardId(Integer pBoardId) {
+		this.pBoardId = pBoardId;
+	}
+
+	public String getpBoardName() {
+		return pBoardName;
+	}
+
+	public void setpBoardName(String pBoardName) {
+		this.pBoardName = pBoardName;
+	}
+
+	public String getpBoardNameFuzzy() {
+		return pBoardNameFuzzy;
+	}
+
+	public void setpBoardNameFuzzy(String pBoardNameFuzzy) {
+		this.pBoardNameFuzzy = pBoardNameFuzzy;
+	}
+
+	public String getCurrentUserId() {
+		return currentUserId;
+	}
+
+	public void setCurrentUserId(String currentUserId) {
+		this.currentUserId = currentUserId;
+	}
 
 	private String nickNameFuzzy;
 
@@ -174,21 +207,6 @@ public class ForumArticleQuery extends BaseQuery {
 		this.boardName = boardName;
 	}
 
-	public Integer getPBoardId() {
-		return this.pBoardId;
-	}
-
-	public void setPBoardId(Integer pBoardId) {
-		this.pBoardId = pBoardId;
-	}
-
-	public String getPBoardName() {
-		return this.pBoardName;
-	}
-
-	public void setPBoardName(String pBoardName) {
-		this.pBoardName = pBoardName;
-	}
 
 	public String getUserId() {
 		return this.userId;
@@ -342,13 +360,6 @@ public class ForumArticleQuery extends BaseQuery {
 		this.boardNameFuzzy = boardNameFuzzy;
 	}
 
-	public String getPBoardNameFuzzy() {
-		return this.pBoardNameFuzzy;
-	}
-
-	public void setPBoardNameFuzzy(String pBoardNameFuzzy) {
-		this.pBoardNameFuzzy = pBoardNameFuzzy;
-	}
 
 	public String getUserIdFuzzy() {
 		return this.userIdFuzzy;
