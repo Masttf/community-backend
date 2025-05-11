@@ -2,12 +2,11 @@ package fun.masttf.service.impl;
 
 import java.util.Date;
 import java.util.List;
-
-import javax.jws.soap.SOAPBinding.Use;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.apache.tomcat.jni.User;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.exception.BusinessException;
@@ -19,13 +18,17 @@ import fun.masttf.entity.query.UserIntegralRecordQuery;
 import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.service.EmailCodeService;
 import fun.masttf.service.UserInfoService;
+import fun.masttf.utils.JsonUtils;
+import fun.masttf.utils.OKHttpUtils;
 import fun.masttf.utils.StringTools;
 import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.UserInfoMapper;
 import fun.masttf.mapper.UserIntegralRecordMapper;
 import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
+import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.MessageStatusEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
@@ -41,6 +44,7 @@ import fun.masttf.entity.enums.UserStatusEnum;
  */
 @Service("userInfoService")
 public class UserInfoServiceImpl implements UserInfoService {
+	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserInfoServiceImpl.class);
 
 	@Autowired
 	private EmailCodeService emailCodeService;
@@ -53,6 +57,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	@Autowired
 	private UserIntegralRecordMapper<UserIntegralRecord, UserIntegralRecordQuery> userIntegralRecordMapper;
+	@Autowired
+	private WebConfig webConfig;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -248,5 +254,46 @@ public class UserInfoServiceImpl implements UserInfoService {
 		if(res == 0){
 			throw new BusinessException("更新用户积分失败");
 		}
+	}
+
+	@Override
+	public SessionWebUserDto login(String email, String password, String ip) {
+		UserInfo userInfo = userInfoMapper.selectByEmail(email);
+		if(userInfo == null || !userInfo.getPassword().equals(StringTools.encodeMd5(password))){
+			throw new BusinessException("账号或密码错误");
+		}
+		if(userInfo.getStatus() == UserStatusEnum.DISABLE.getStatus()){
+			throw new BusinessException("用户已被禁用");
+		}
+		String ipAddress = getIpAddress(ip);
+		UserInfo updateInfo = new UserInfo();
+		updateInfo.setLastLoginTime(new Date());
+		updateInfo.setLastLoginIp(ip);
+		updateInfo.setLastLoginIpAddress(ipAddress);
+		userInfoMapper.updateByUserId(updateInfo, userInfo.getUserId());
+		SessionWebUserDto sessionWebUserDto = new SessionWebUserDto();
+		sessionWebUserDto.setNickName(userInfo.getNickName());
+		sessionWebUserDto.setProvice(ipAddress);
+		sessionWebUserDto.setUserId(userInfo.getUserId());
+		if(!StringTools.isEmpty(webConfig.getAdminEmails()) && ArrayUtils.contains(webConfig.getAdminEmails().split(","), email)){
+			sessionWebUserDto.setIsAdmin(true);
+		} else{
+			sessionWebUserDto.setIsAdmin(false);
+		}
+		return sessionWebUserDto;
+	}
+	public String getIpAddress(String ip) {
+		try {
+			String url = "http://whois.pconline.com.cn/ipJson?json=true&ip=" + ip;
+			String responseJson = OKHttpUtils.getRequest(url);
+			if(responseJson == null) {
+				return Constans.NO_ADDRESS;
+			}
+			Map<String, String> addressInfo = JsonUtils.convertJson2Obj(responseJson, Map.class);
+			return addressInfo.get("pro");
+		} catch (Exception e) {
+			logger.error("获取ip地址失败", e);
+		}
+		return Constans.NO_ADDRESS;
 	}
 }

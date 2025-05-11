@@ -2,6 +2,7 @@ package fun.masttf.controller;
 
 import java.io.IOException;
 
+import javax.mail.Session;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -14,13 +15,12 @@ import fun.masttf.annotation.GlobalInterceptor;
 import fun.masttf.aspect.VerifyParam;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.CreateImageCode;
-import fun.masttf.entity.enums.ResponseCodeEnum;
+import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.VerifyRegexEnum;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.service.EmailCodeService;
 import fun.masttf.service.UserInfoService;
-import fun.masttf.utils.StringTools;
 
 @RestController
 public class AccountController extends ABaseController {
@@ -64,7 +64,7 @@ public class AccountController extends ABaseController {
         try {
             String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY_EMAIL);
             if (!code.equals(checkCode)) {
-                throw new BusinessException("验证码错误");
+                throw new BusinessException("图片验证码错误");
             }
             emailCodeService.sendEmailCode(email, type);
             return getSuccessResponseVo(null);
@@ -88,9 +88,29 @@ public class AccountController extends ABaseController {
         try {
             String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
             if (!code.equals(checkCode)) {
-                throw new BusinessException("验证码错误");
+                throw new BusinessException("图片验证码错误");
             }
             userInfoService.register(email, emailCode, nickName, password);
+            return getSuccessResponseVo(null);
+        } finally {
+            // 清除验证码
+            session.removeAttribute(Constans.CHECK_CODE_KEY);
+        }
+    }
+
+    @RequestMapping("/login")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVo<Object> login(HttpSession session,
+            @VerifyParam(required = true) String email, 
+            @VerifyParam(required = true) String password, 
+            @VerifyParam(required = true) String checkCode) {
+        try {
+            String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
+            if (!code.equals(checkCode)) {
+                throw new BusinessException("图片验证码错误");
+            }
+            SessionWebUserDto sessionWebUserDto = userInfoService.login(email, password, "");
+            
             return getSuccessResponseVo(null);
         } finally {
             // 清除验证码

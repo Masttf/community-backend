@@ -5,6 +5,7 @@ public enum ResponseCodeEnum {
     CODE_404(404, "请求地址不存在"),
     CODE_600(600, "请求参数错误"),
     CODE_601(601, "信息已存在"),
+    CODE_900(900, "http请求超时"),
     CODE_500(500, "服务器返回错误，请联系管理员");
 
     private Integer code;
