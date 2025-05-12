@@ -3,15 +3,23 @@ package fun.masttf.aspect;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.tomcat.util.bcel.Const;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import fun.masttf.annotation.GlobalInterceptor;
+import fun.masttf.entity.constans.Constans;
+import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.utils.StringTools;
@@ -41,7 +49,7 @@ public class OperactionAspect {
                 return null;
             }
             if(interceptor.checkLogin()){
-                // Check login logic here
+                checkLogin();
             }
             if(interceptor.checkParams()){
                 validateParams(method, args);
@@ -58,6 +66,16 @@ public class OperactionAspect {
             logger.error("OperactionAspect: 错误", e);
             throw new BusinessException(ResponseCodeEnum.CODE_500);
         }
+    }
+
+    private void checkLogin() {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpSession session = request.getSession();
+        SessionWebUserDto userDto = (SessionWebUserDto) session.getAttribute(Constans.SESSION_KEY);
+        if(userDto == null){
+            throw new BusinessException(ResponseCodeEnum.CODE_901);
+        }
+
     }
     private void validateParams(Method m,Object[] args) {
         Parameter[] parameters = m.getParameters();

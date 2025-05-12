@@ -93,4 +93,11 @@ public class ForumArticleController extends ABaseController {
         }
         return getSuccessResponseVo(detailVo);
     }
+    @RequestMapping("/doLike")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVo<Object> doLike(HttpSession session,@VerifyParam(required = true) String articleId) {
+        SessionWebUserDto userDto = (SessionWebUserDto) session.getAttribute(Constans.SESSION_KEY);
+        likeRecordService.doLike(articleId, userDto.getUserId(), userDto.getNickName(), OperRecordOpTypeEnum.ARTICLE_LIKE);
+        return getSuccessResponseVo(null);
+    }
 }
