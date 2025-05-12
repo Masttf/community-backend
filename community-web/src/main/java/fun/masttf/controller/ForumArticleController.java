@@ -81,7 +81,7 @@ public class ForumArticleController extends ABaseController {
             attachmentQuery.setArticleId(article.getArticleId());
             List<ForumArticleAttachment> attachmentList = forumArticleAttachmentService.findListByQuery(attachmentQuery);
             if(!attachmentList.isEmpty()){
-                detailVo.setArticleAttachment(CopyTools.copy(attachmentList.get(0), ForumArticleAttachmentVo.class));
+                detailVo.setArticleAttachments(CopyTools.copyList(attachmentList, ForumArticleAttachmentVo.class));
             }
         }
 
