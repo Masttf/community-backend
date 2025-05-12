@@ -31,3 +31,5 @@ logs/
 .roo/*
 
 application-secret.yaml
+
+file/*
