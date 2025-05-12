@@ -88,7 +88,7 @@ public class ForumArticleController extends ABaseController {
         if(userDto != null) {
             LikeRecord likeRecord = likeRecordService.getByObjectIdAndUserIdAndOpType(articleId, userDto.getUserId(), OperRecordOpTypeEnum.ARTICLE_LIKE.getType());
             if(likeRecord != null) {
-                detailVo.setHaveLike(canShowNoAudit);(true);
+                detailVo.setHaveLike(true);
             }
         }
         return getSuccessResponseVo(detailVo);
