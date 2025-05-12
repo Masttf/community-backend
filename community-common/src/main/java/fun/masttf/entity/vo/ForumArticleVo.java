@@ -1,4 +1,4 @@
-package fun.masttf.entity.vo.Web;
+package fun.masttf.entity.vo;
 
 import java.io.Serializable;
 import java.util.Date;

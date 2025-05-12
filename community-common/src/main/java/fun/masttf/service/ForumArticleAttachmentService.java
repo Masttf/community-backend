@@ -2,6 +2,7 @@ package fun.masttf.service;
 
 import java.util.List;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.po.ForumArticleAttachment;
 import fun.masttf.entity.query.ForumArticleAttachmentQuery;
 
@@ -58,4 +59,5 @@ public interface ForumArticleAttachmentService {
 	 */
 	Integer deleteByFileId(String fileId);
 
+	ForumArticleAttachment downloadAttachment(String fileId, SessionWebUserDto userDto);
 }

@@ -1,15 +1,36 @@
 package fun.masttf.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.apache.tomcat.jni.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.exception.BusinessException;
+import fun.masttf.entity.po.ForumArticle;
 import fun.masttf.entity.po.ForumArticleAttachment;
+import fun.masttf.entity.po.ForumArticleAttachmentDownload;
+import fun.masttf.entity.po.UserInfo;
+import fun.masttf.entity.po.UserIntegralRecord;
+import fun.masttf.entity.po.UserMessage;
 import fun.masttf.entity.query.ForumArticleAttachmentQuery;
+import fun.masttf.entity.query.ForumArticleQuery;
 import fun.masttf.service.ForumArticleAttachmentService;
+import fun.masttf.mapper.ForumArticleAttachmentDownloadMapper;
 import fun.masttf.mapper.ForumArticleAttachmentMapper;
+import fun.masttf.mapper.ForumArticleMapper;
+import fun.masttf.mapper.UserInfoMapper;
+import fun.masttf.mapper.UserIntegralRecordMapper;
+import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.entity.query.UserInfoQuery;
+import fun.masttf.entity.query.UserMessageQuery;
+import fun.masttf.entity.dto.SessionWebUserDto;
+import fun.masttf.entity.enums.MessageStatusEnum;
+import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
+import fun.masttf.entity.enums.UserIntegralOperTypeEnum;
 
 /**
  * @Description:文件信息Serviece
@@ -22,7 +43,16 @@ public class ForumArticleAttachmentServiceImpl implements ForumArticleAttachment
 
 	@Autowired
 	private ForumArticleAttachmentMapper<ForumArticleAttachment, ForumArticleAttachmentQuery> forumArticleAttachmentMapper;
-
+	@Autowired
+	private ForumArticleAttachmentDownloadMapper<ForumArticleAttachmentDownload, ForumArticleAttachmentQuery> forumArticleAttachmentDownloadMapper;
+	@Autowired
+	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
+	@Autowired
+	private UserIntegralRecordMapper<UserIntegralRecord, UserIntegralRecordQuery> userIntegralRecordMapper;
+	@Autowired
+	private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
+	@Autowired
+	private UserMessageMapper<UserMessage, UserMessageQuery> userMessageMapper;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -107,4 +137,74 @@ public class ForumArticleAttachmentServiceImpl implements ForumArticleAttachment
 		return forumArticleAttachmentMapper.deleteByFileId(fileId);
 	}
 
+	/*
+	 * 先查询附件是否存在
+	 * 然后查询积分是否足够/或者是自己发布的
+	 * 扣除积分
+	 * 增加积分
+	 * 记录下载记录
+	 * 发送消息
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public ForumArticleAttachment downloadAttachment(String fileId, SessionWebUserDto userDto){
+		ForumArticleAttachment attachment = forumArticleAttachmentMapper.selectByFileId(fileId);
+		if(attachment == null) {
+			throw new BusinessException("附件不存在");
+		}
+		ForumArticleAttachmentDownload attachmentDownload = null;
+		if(!attachment.getUserId().equals(userDto.getUserId())) {
+			attachmentDownload = forumArticleAttachmentDownloadMapper.selectByFileIdAndUserId(fileId, userDto.getUserId());
+			if(attachmentDownload == null) {
+				UserInfo userInfo = userInfoMapper.selectByUserId(userDto.getUserId());
+				if(userInfo.getCurrentIntegral() < attachment.getIntegral()) {
+					throw new BusinessException("积分不足");
+				}
+			}
+		}
+		//添加下载记录
+		ForumArticleAttachmentDownload updateDownload = new ForumArticleAttachmentDownload();
+		updateDownload.setArticleId(attachment.getArticleId());
+		updateDownload.setDownloadCount(1);
+		updateDownload.setFileId(fileId);
+		updateDownload.setUserId(userDto.getUserId());
+		forumArticleAttachmentDownloadMapper.insertOrUpdate(updateDownload);
+		
+		//如果是自己发布的或者已经下载过了
+		if(attachmentDownload != null || attachment.getUserId().equals(userDto.getUserId())) {
+			return attachment;
+		}
+		//扣除积分
+		userInfoMapper.updateIntegral(userDto.getUserId(), -attachment.getIntegral());
+		UserIntegralRecord record = new UserIntegralRecord();
+		record.setCreateTime(new Date());
+		record.setIntegral(attachment.getIntegral());
+		record.setOperType(UserIntegralOperTypeEnum.DOWNLOAD_ATTACHMENT.getOperType());
+		record.setUserId(userDto.getUserId());
+		userIntegralRecordMapper.insert(record);
+		//增加积分
+		userInfoMapper.updateIntegral(attachment.getUserId(), attachment.getIntegral());
+		UserIntegralRecord record2 = new UserIntegralRecord();
+		record2.setCreateTime(new Date());
+		record2.setIntegral(attachment.getIntegral());
+		record2.setOperType(UserIntegralOperTypeEnum.DOWNLOAD_ATTACHMENT.getOperType());
+		record2.setUserId(attachment.getUserId());
+		userIntegralRecordMapper.insert(record2);
+
+		//发送消息
+		ForumArticle article = forumArticleMapper.selectByArticleId(attachment.getArticleId());
+		UserMessage userMessage = new UserMessage();
+		userMessage.setArticleId(attachment.getArticleId());
+		userMessage.setArticleTitle(article.getTitle());
+		userMessage.setCommentId(0);
+		userMessage.setCreateTime(new Date());
+		userMessage.setMessageType(MessageTypeEnum.DOWNLOAD_ATTACHMENT.getType());
+		userMessage.setMessageContent(userDto.getNickName() + "下载了你的附件");
+		userMessage.setReceivedUserId(attachment.getUserId());
+		userMessage.setSendUserId(userDto.getUserId());
+		userMessage.setSendNickName(userDto.getNickName());
+		userMessage.setStatus(MessageStatusEnum.NO_READ.getStatus());
+		userMessageMapper.insert(userMessage);
+		return attachment;
+	}
 }

@@ -2,8 +2,6 @@ package fun.masttf.entity.vo;
 
 import java.util.List;
 
-import fun.masttf.entity.vo.Web.ForumArticleVo;
-
 public class ForumArticleDetailVo {
     private ForumArticleVo article;
     private List<ForumArticleAttachmentVo> articleAttachments;

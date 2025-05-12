@@ -5,7 +5,6 @@ import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.utils.CopyTools;
 
-import javax.mail.Session;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
