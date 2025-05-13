@@ -28,6 +28,11 @@ public class ForumCommentController extends ABaseController {
     @Autowired
     private LikeRecordService likeRecordService;
 
+    /*
+     * 先查询一级列表，再查询二级列表然后组合，
+     * 这里限制了分页，所以二级列表用 sql 中in来查询 不用left join
+     * 点赞状态，使用相关子查询，据说会被优化为join
+     */
     @RequestMapping("/loadComment")
     @GlobalInterceptor(checkParams = true)
     public ResponseVo<Object> loadComment(HttpSession session,@VerifyParam(required = true) String articleId, Integer pageNo, Integer orderType) {
