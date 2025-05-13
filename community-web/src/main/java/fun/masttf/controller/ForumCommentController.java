@@ -11,8 +11,11 @@ import fun.masttf.aspect.VerifyParam;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.ArticleStatusEnum;
 import fun.masttf.entity.enums.CommentOrderTypeEnum;
+import fun.masttf.entity.enums.OperRecordOpTypeEnum;
 import fun.masttf.entity.enums.PageSize;
 import fun.masttf.entity.enums.ResponseCodeEnum;
+import fun.masttf.entity.po.ForumComment;
+import fun.masttf.entity.po.LikeRecord;
 import fun.masttf.entity.query.ForumCommentQuery;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
@@ -56,5 +59,18 @@ public class ForumCommentController extends ABaseController {
         }
 
         return getSuccessResponseVo(forumCommentService.findListByPage(query));
+    }
+
+    @RequestMapping("/doLike")
+    @GlobalInterceptor(checkLogin = true,checkParams = true)
+    public ResponseVo<Object> doLike(HttpSession session,
+                    @VerifyParam(required = true) Integer commentId) {
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        String objectId = String.valueOf(commentId);
+        likeRecordService.doLike(objectId, userDto.getUserId(), userDto.getNickName(), OperRecordOpTypeEnum.COMMENT_LIKE);
+        LikeRecord likeRecord = likeRecordService.getByObjectIdAndUserIdAndOpType(objectId, userDto.getUserId(), OperRecordOpTypeEnum.COMMENT_LIKE.getType());
+        ForumComment comment = forumCommentService.getByCommentId(commentId);
+        comment.setLikeType(likeRecord == null ? 0 : 1);
+        return getSuccessResponseVo(comment);
     }
 }

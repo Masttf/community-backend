@@ -8,12 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.entity.po.ForumArticle;
+import fun.masttf.entity.po.ForumComment;
 import fun.masttf.entity.po.LikeRecord;
 import fun.masttf.entity.po.UserMessage;
 import fun.masttf.entity.query.ForumArticleQuery;
+import fun.masttf.entity.query.ForumCommentQuery;
 import fun.masttf.entity.query.LikeRecordQuery;
 import fun.masttf.service.LikeRecordService;
 import fun.masttf.mapper.ForumArticleMapper;
+import fun.masttf.mapper.ForumCommentMapper;
 import fun.masttf.mapper.LikeRecordMapper;
 import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
@@ -39,6 +42,8 @@ public class LikeRecordServiceImpl implements LikeRecordService {
 	private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
 	@Autowired
 	private UserMessageMapper<UserMessage, UserMessageQuery> userMessageMapper;
+	@Autowired
+	private ForumCommentMapper<ForumComment, ForumCommentQuery> forumCommentMapper;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -170,7 +175,18 @@ public class LikeRecordServiceImpl implements LikeRecordService {
 				userMessage.setReceivedUserId(article.getUserId());
 				break;
 			case COMMENT_LIKE:
-				
+				ForumComment comment = forumCommentMapper.selectByCommentId(Integer.parseInt(objectId));
+				if(comment == null) {
+					throw new BusinessException("评论不存在");
+				}
+				commentLike(objectId, comment, userId);
+				ForumArticle article2 = forumArticleMapper.selectByArticleId(comment.getArticleId());
+				userMessage.setArticleId(article2.getArticleId());
+				userMessage.setArticleTitle(article2.getTitle());
+				userMessage.setCommentId(comment.getCommentId());
+				userMessage.setMessageType(MessageTypeEnum.COMMENT_LIKE.getType());
+				userMessage.setMessageContent(nickName + "点赞了你的评论");
+				userMessage.setReceivedUserId(comment.getUserId());
 				break;
 			default:
 				break;
@@ -198,6 +214,23 @@ public class LikeRecordServiceImpl implements LikeRecordService {
 		} else {
 			likeRecordMapper.deleteByObjectIdAndUserIdAndOpType(article.getArticleId(), userId, OperRecordOpTypeEnum.ARTICLE_LIKE.getType());
 			forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.GOOD_COUNT.getType(), 1, article.getArticleId());
+		}
+	}
+
+	public void commentLike(String objectId, ForumComment comment, String userId) {
+		LikeRecord likeRecord = likeRecordMapper.selectByObjectIdAndUserIdAndOpType(objectId, userId, OperRecordOpTypeEnum.COMMENT_LIKE.getType());
+		if(likeRecord == null) {
+			likeRecord = new LikeRecord();
+			likeRecord.setObjectId(objectId);
+			likeRecord.setUserId(userId);
+			likeRecord.setOpType(OperRecordOpTypeEnum.COMMENT_LIKE.getType());
+			likeRecord.setCreateTime(new Date());
+			likeRecord.setAuthorUserId(comment.getUserId());
+			likeRecordMapper.insert(likeRecord);
+			forumCommentMapper.updateCommentGoodCount(-1, comment.getCommentId());
+		} else {
+			likeRecordMapper.deleteByObjectIdAndUserIdAndOpType(objectId, userId, OperRecordOpTypeEnum.COMMENT_LIKE.getType());
+			forumCommentMapper.updateCommentGoodCount(1, comment.getCommentId());
 		}
 	}
 }

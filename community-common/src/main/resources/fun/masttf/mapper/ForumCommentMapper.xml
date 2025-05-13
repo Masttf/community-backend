@@ -454,4 +454,9 @@
 		DELETE FROM forum_comment WHERE comment_id = #{commentId}
 	</delete>
 
+	<update id="updateCommentGoodCount">
+		UPDATE forum_comment
+		SET good_count = good_count + #{changeCount}
+		WHERE comment_id = #{commentId}
+	</update>
 </mapper>

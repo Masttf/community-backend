@@ -25,5 +25,5 @@ public interface ForumCommentMapper<T, P> extends BaseMapper<T, P> {
 	 */
 	Integer deleteByCommentId(@Param("commentId") Integer commentId);
 
-
+	void updateCommentGoodCount(@Param("changeCount") Integer changeCount, @Param("commentId") Integer commentId);
 }
