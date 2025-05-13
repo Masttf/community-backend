@@ -285,7 +285,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 	}
 	public String getIpAddress(String ip) {
 		try {
-			String url = "http://whois.pconline.com.cn/ipJson?json=true&ip=" + ip;
+			String url = "http://whois.pconline.com.cn/ipJson.jsp?json=true&ip=" + ip;
 			String responseJson = OKHttpUtils.getRequest(url);
 			if(responseJson == null) {
 				return Constans.NO_ADDRESS;

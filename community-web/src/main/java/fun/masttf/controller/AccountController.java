@@ -92,7 +92,7 @@ public class AccountController extends ABaseController {
             @VerifyParam(required = true) String checkCode) {
         try {
             String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
-            if (!code.equals(checkCode)) {
+            if (code == null || !code.equals(checkCode)) {
                 throw new BusinessException("图片验证码错误");
             }
             userInfoService.register(email, emailCode, nickName, password);
@@ -112,7 +112,7 @@ public class AccountController extends ABaseController {
             @VerifyParam(required = true) String checkCode) {
         try {
             String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
-            if (!code.equals(checkCode)) {
+            if (code == null || !code.equals(checkCode)) {
                 throw new BusinessException("图片验证码错误");
             }
             SessionWebUserDto sessionWebUserDto = userInfoService.login(email, password, getIpAddr(request));
@@ -156,7 +156,7 @@ public class AccountController extends ABaseController {
             @VerifyParam(required = true) String checkCode) {
         try {
             String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
-            if (!code.equals(checkCode)) {
+            if (code == null || !code.equals(checkCode)) {
                 throw new BusinessException("图片验证码错误");
             }
             userInfoService.resetPwd(email, emailCode, password);

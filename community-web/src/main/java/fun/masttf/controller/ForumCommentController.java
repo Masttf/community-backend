@@ -73,4 +73,13 @@ public class ForumCommentController extends ABaseController {
         comment.setLikeType(likeRecord == null ? 0 : 1);
         return getSuccessResponseVo(comment);
     }
+
+    @RequestMapping("/changeTopType")
+    @GlobalInterceptor(checkLogin = true,checkParams = true)
+    public ResponseVo<Object> changeTopType(HttpSession session,
+                    @VerifyParam(required = true) Integer commentId,
+                    @VerifyParam(required = true) Integer topType) {
+        forumCommentService.changeTopType(getUserInfoSession(session).getUserId(), commentId, topType);
+        return getSuccessResponseVo(null);
+    }
 }

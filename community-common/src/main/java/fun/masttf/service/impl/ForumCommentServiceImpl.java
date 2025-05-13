@@ -127,4 +127,8 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 		return forumCommentMapper.deleteByCommentId(commentId);
 	}
 
+	@Override
+	public void changeTopType(String userId,Integer commentId, Integer topType){
+		
+	}
 }

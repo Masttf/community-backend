@@ -58,4 +58,6 @@ public interface ForumCommentService {
 	 */
 	Integer deleteByCommentId(Integer commentId);
 
+	void changeTopType(String userId,Integer commentId, Integer topType);
+
 }
