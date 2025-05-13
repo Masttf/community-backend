@@ -46,6 +46,8 @@ public class ForumBoard implements Serializable {
 	 */
 	private Integer postType;
 
+	private List<ForumBoard> children;
+
 	public Integer getpBoardId() {
 		return pBoardId;
 	}
@@ -61,8 +63,6 @@ public class ForumBoard implements Serializable {
 	public void setChildren(List<ForumBoard> children) {
 		this.children = children;
 	}
-
-	private List<ForumBoard> children;
 
 	public Integer getBoardId() {
 		return this.boardId;

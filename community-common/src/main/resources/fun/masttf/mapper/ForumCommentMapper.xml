@@ -31,6 +31,8 @@
 		<result column="good_count" property="goodCount" />
 		<!--0:待审核  1:已审核 -->
 		<result column="status" property="status" />
+		<!-- 0:未点赞 1:已点赞-->
+		<result column="likeType" property="likeType" />
 	</resultMap>
 
 	<!-- 基础查询列 -->
@@ -116,6 +118,16 @@
 		<if test="query.postTimeEnd != null and query.postTimeEnd != ''">
 			<![CDATA[ and post_time < DATE_ADD(str_to_date(#{query.postTimeEnd},'%Y-%m-%d'), INTERVAL 1 DAY) ]]>
 		</if>
+		<!-- 查询待审核和已审核 -->
+		<if test="query.currentUserId != null">
+			and (status = 1 or (status = 0 and user_id = #{query.currentUserId}))
+		</if>
+		<if test="query.pCommentIdList != null and query.pCommentIdList.size() > 0">
+			and p_comment_id in
+			<foreach collection="query.pCommentIdList" item="item" separator="," open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
 	</sql>
 
 	<!-- 通用查询条件 -->
@@ -128,7 +140,12 @@
 
 	<!-- 查询列表 -->
 	<select id="selectList"  resultMap="BaseResultMap">
-		SELECT <include refid="BaseColumnList" /> FROM forum_comment <include refid="QueryCondition" />
+		SELECT <include refid="BaseColumnList" /> 
+		<if test="query.queryLikeType != null and query.queryLikeType and query.currentUserId != null">
+			,(SELECT count(1) FROM like_record r WHERE r.object_id=forum_comment.comment_id and r.user_id=#{query.currentUserId}) as likeType
+		</if>
+		FROM forum_comment
+		<include refid="QueryCondition" />
 		<if test="query.orderBy != null and query.orderBy != ''"> order by ${query.orderBy} </if>
 		<if test="query.simplePage != null"> limit #{query.simplePage.start}, #{query.simplePage.end} </if>
 	</select>

@@ -1,6 +1,7 @@
 package fun.masttf.entity.query;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description:评论查询类
@@ -100,20 +101,53 @@ public class ForumCommentQuery extends BaseQuery {
 	 */
 	private Integer status;
 
+	private Boolean loadChildren;
+
+	private String currentUserId;
+
+	private Boolean queryLikeType;
+	
+	private List<Integer> pCommentIdList;
+
+	public Integer getpCommentId() {
+		return pCommentId;
+	}
+
+	public void setpCommentId(Integer pCommentId) {
+		this.pCommentId = pCommentId;
+	}
+
+	public Boolean getLoadChildren() {
+		return loadChildren;
+	}
+
+	public void setLoadChildren(Boolean loadChildren) {
+		this.loadChildren = loadChildren;
+	}
+
+	public String getCurrentUserId() {
+		return currentUserId;
+	}
+
+	public void setCurrentUserId(String currentUserId) {
+		this.currentUserId = currentUserId;
+	}
+
+	public Boolean getQueryLikeType() {
+		return queryLikeType;
+	}
+
+	public void setQueryLikeType(Boolean queryLikeType) {
+		this.queryLikeType = queryLikeType;
+	}
+
+
 	public Integer getCommentId() {
 		return this.commentId;
 	}
 
 	public void setCommentId(Integer commentId) {
 		this.commentId = commentId;
-	}
-
-	public Integer getPCommentId() {
-		return this.pCommentId;
-	}
-
-	public void setPCommentId(Integer pCommentId) {
-		this.pCommentId = pCommentId;
 	}
 
 	public String getArticleId() {
@@ -290,6 +324,14 @@ public class ForumCommentQuery extends BaseQuery {
 
 	public void setPostTimeEnd(String postTimeEnd) {
 		this.postTimeEnd = postTimeEnd;
+	}
+
+	public List<Integer> getpCommentIdList() {
+		return pCommentIdList;
+	}
+
+	public void setpCommentIdList(List<Integer> pCommentIdList) {
+		this.pCommentIdList = pCommentIdList;
 	}
 
 

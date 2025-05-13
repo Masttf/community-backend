@@ -2,6 +2,8 @@ package fun.masttf.entity.po;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import fun.masttf.utils.DateUtils;
@@ -89,20 +91,46 @@ public class ForumComment implements Serializable {
 	@JsonIgnore
 	private Integer status;
 
-	public Integer getCommentId() {
+	/*
+	 * 0:未点赞  1:已点赞
+	 */
+	private Integer likeType;
+	/*
+	 * 评论的回复列表
+	 */
+	private List<ForumComment> replyList;
+	
+	public Integer getLikeType() {
+		return likeType;
+	}
+
+	public void setLikeType(Integer likeType) {
+		this.likeType = likeType;
+	}
+
+	public List<ForumComment> getReplyList() {
+		return replyList;
+	}
+
+	public void setReplyList(List<ForumComment> replyList) {
+		this.replyList = replyList;
+	}
+
+
+	public Integer getpCommentId() {
+        return pCommentId;
+    }
+
+    public void setpCommentId(Integer pCommentId) {
+        this.pCommentId = pCommentId;
+    }
+
+    public Integer getCommentId() {
 		return this.commentId;
 	}
 
 	public void setCommentId(Integer commentId) {
 		this.commentId = commentId;
-	}
-
-	public Integer getPCommentId() {
-		return this.pCommentId;
-	}
-
-	public void setPCommentId(Integer pCommentId) {
-		this.pCommentId = pCommentId;
 	}
 
 	public String getArticleId() {

@@ -1,6 +1,9 @@
 package fun.masttf.service.impl;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
@@ -9,6 +12,7 @@ import fun.masttf.entity.query.ForumCommentQuery;
 import fun.masttf.service.ForumCommentService;
 import fun.masttf.mapper.ForumCommentMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.entity.enums.CommentOrderTypeEnum;
 import fun.masttf.entity.enums.PageSize;
 
 /**
@@ -28,7 +32,23 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 	 */
 	@Override
 	public List<ForumComment> findListByQuery(ForumCommentQuery query) {
-		return forumCommentMapper.selectList(query);
+		List<ForumComment> list = forumCommentMapper.selectList(query);
+		if(query.getLoadChildren() != null && query.getLoadChildren()) {
+			ForumCommentQuery subQuery = new ForumCommentQuery();
+			subQuery.setArticleId(query.getArticleId());
+			subQuery.setCurrentUserId(query.getCurrentUserId());
+			subQuery.setOrderBy(CommentOrderTypeEnum.SEND.getOderSql());
+			subQuery.setQueryLikeType(query.getQueryLikeType());
+			subQuery.setStatus(query.getStatus());
+			List<Integer> pCommentIdList = list.stream().map(ForumComment::getCommentId).distinct().collect(Collectors.toList());
+			subQuery.setpCommentIdList(pCommentIdList);
+			List<ForumComment> subList = forumCommentMapper.selectList(subQuery);
+			Map<Integer, List<ForumComment>> subMap = subList.stream().collect(Collectors.groupingBy(ForumComment::getpCommentId));
+			list.forEach(comment -> {
+				comment.setReplyList(subMap.get(comment.getCommentId()));
+			});
+		}
+		return list;
 	}
 
 	/**
@@ -48,7 +68,7 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 		Integer pageSize = query.getPageSize() == null ? PageSize.SIZE15.getSize() : query.getPageSize();
 		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
 		query.setSimplePage(page);
-		List<ForumComment> list = forumCommentMapper.selectList(query);
+		List<ForumComment> list = findListByQuery(query);
 		PaginationResultVo<ForumComment> result = new PaginationResultVo<ForumComment>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
 		return result;
 	}
