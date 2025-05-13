@@ -459,4 +459,9 @@
 		SET good_count = good_count + #{changeCount}
 		WHERE comment_id = #{commentId}
 	</update>
+	<update id="updateTopTypeByArticleId">
+		UPDATE forum_comment
+		SET top_type = 0
+		WHERE article_id = #{articleId}
+	</update>
 </mapper>

@@ -4,16 +4,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.xml.stream.events.Comment;
+
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.exception.BusinessException;
+import fun.masttf.entity.po.ForumArticle;
 import fun.masttf.entity.po.ForumComment;
 import fun.masttf.entity.query.ForumCommentQuery;
 import fun.masttf.service.ForumCommentService;
+import fun.masttf.mapper.ForumArticleMapper;
 import fun.masttf.mapper.ForumCommentMapper;
 import fun.masttf.entity.query.SimplePage;
 import fun.masttf.entity.enums.CommentOrderTypeEnum;
+import fun.masttf.entity.enums.CommentTopTypeEnum;
 import fun.masttf.entity.enums.PageSize;
+import fun.masttf.entity.enums.ResponseCodeEnum;
 
 /**
  * @Description:评论Serviece
@@ -26,7 +33,8 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 
 	@Autowired
 	private ForumCommentMapper<ForumComment, ForumCommentQuery> forumCommentMapper;
-
+	@Autowired
+	private ForumArticleMapper<ForumArticle, ForumCommentQuery> forumArticleMapper;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -129,6 +137,32 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 
 	@Override
 	public void changeTopType(String userId,Integer commentId, Integer topType){
-		
+		CommentTopTypeEnum topTypeEnum = CommentTopTypeEnum.getByType(topType);
+		if(topTypeEnum == null) {
+			throw new BusinessException(ResponseCodeEnum.CODE_600);
+		}
+		ForumComment comment = getByCommentId(commentId);
+		if(comment == null) {
+			throw new BusinessException(ResponseCodeEnum.CODE_600);
+		}
+
+		ForumArticle article = forumArticleMapper.selectByArticleId(comment.getArticleId());
+		if(article == null) {
+			throw new BusinessException(ResponseCodeEnum.CODE_600);
+		}
+		// 只有文章作者可以置顶评论,且只能置顶一级评论
+		if(!article.getUserId().equals(userId) || comment.getpCommentId() != 0) {
+			throw new BusinessException(ResponseCodeEnum.CODE_600);
+		}
+		if(topTypeEnum.getType().equals(comment.getTopType())) {
+			return ;
+		}
+		if(topTypeEnum.equals(CommentTopTypeEnum.TOP)){
+			forumCommentMapper.updateTopTypeByArticleId(article.getArticleId());
+		}
+		ForumComment updateComment = new ForumComment();
+		updateComment.setTopType(topTypeEnum.getType());
+		forumCommentMapper.updateByCommentId(updateComment, commentId);
+		return ;
 	}
 }
