@@ -20,4 +20,8 @@ public class StringTools {
     public static String encodeMd5(String str) {
         return str.isEmpty() ? null : DigestUtils.md5Hex(str);
     }
+
+    public static String getFileSuffix(String fileName) {
+        return fileName.substring(fileName.lastIndexOf(".") + 1);
+    }
 }

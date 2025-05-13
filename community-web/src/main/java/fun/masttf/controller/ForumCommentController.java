@@ -82,4 +82,6 @@ public class ForumCommentController extends ABaseController {
         forumCommentService.changeTopType(getUserInfoSession(session).getUserId(), commentId, topType);
         return getSuccessResponseVo(null);
     }
+
+    
 }
