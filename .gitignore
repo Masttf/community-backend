@@ -1,5 +1,8 @@
 # Maven
 target/
+community-admin/target/
+community-common/target/
+community-web/target/
 
 # Gradle
 build/
