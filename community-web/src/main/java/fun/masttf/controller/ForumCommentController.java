@@ -1,16 +1,22 @@
 package fun.masttf.controller;
 
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import fun.masttf.annotation.GlobalInterceptor;
 import fun.masttf.aspect.VerifyParam;
 import fun.masttf.entity.dto.SessionWebUserDto;
-import fun.masttf.entity.enums.ArticleStatusEnum;
+import fun.masttf.entity.enums.ArticleOrCommentStatusEnum;
 import fun.masttf.entity.enums.CommentOrderTypeEnum;
+import fun.masttf.entity.enums.CommentTopTypeEnum;
 import fun.masttf.entity.enums.OperRecordOpTypeEnum;
 import fun.masttf.entity.enums.PageSize;
 import fun.masttf.entity.enums.ResponseCodeEnum;
@@ -21,6 +27,7 @@ import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.service.ForumCommentService;
 import fun.masttf.service.LikeRecordService;
+import fun.masttf.utils.StringTools;
 import fun.masttf.utils.SysCacheUtils;
 
 @RestController
@@ -55,7 +62,7 @@ public class ForumCommentController extends ABaseController {
             query.setQueryLikeType(true);
             query.setCurrentUserId(userDto.getUserId());
         } else{
-            query.setStatus(ArticleStatusEnum.AUDIT.getStatus());
+            query.setStatus(ArticleOrCommentStatusEnum.AUDIT.getStatus());
         }
 
         return getSuccessResponseVo(forumCommentService.findListByPage(query));
@@ -83,5 +90,48 @@ public class ForumCommentController extends ABaseController {
         return getSuccessResponseVo(null);
     }
 
+    @RequestMapping("/postComment")
+    @GlobalInterceptor(checkLogin = true,checkParams = true)
+    public ResponseVo<Object> postComment(
+                    HttpServletRequest request,
+                    HttpSession session,
+                    @VerifyParam(required = true) String articleId,
+                    @VerifyParam(min = 5, max = 800) String content,
+                    @VerifyParam(required = true) Integer pCommentId,
+                    MultipartFile image,
+                    String replyUserId) { 
+        
+        if(!SysCacheUtils.getSysSetting().getCommentSetting().getCommentOpen()){
+            throw new BusinessException(ResponseCodeEnum.CODE_404);
+        }
+        if(image == null && StringTools.isEmpty(content)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        String ip = getIpAddr(request);
+        String province = getIpProvince(ip);
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        content = StringTools.escapeHtml(content);
+        ForumComment comment = new ForumComment();
+        comment.setArticleId(articleId);
+        comment.setContent(content);
+        comment.setpCommentId(pCommentId);
+        comment.setUserId(userDto.getUserId());
+        comment.setPostTime(new Date());
+        comment.setReplyUserId(replyUserId);
+        comment.setNickName(userDto.getNickName());
+        comment.setUserIpAddress(province);
+        comment.setTopType(CommentTopTypeEnum.NOT_TOP.getType());
+        forumCommentService.postComment(comment, image);
+        if(pCommentId != 0){
+            ForumCommentQuery commentQuery = new ForumCommentQuery();
+            commentQuery.setpCommentId(pCommentId);
+            commentQuery.setArticleId(articleId);
+            commentQuery.setOrderBy(CommentOrderTypeEnum.SEND.getOderSql());
+            List<ForumComment> list = forumCommentService.findListByPage(commentQuery).getList();
+            return getSuccessResponseVo(list);
+        }
+
+        return getSuccessResponseVo(comment);
+    }
     
 }

@@ -2,7 +2,6 @@ package fun.masttf.service.impl;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +17,6 @@ import fun.masttf.entity.query.UserIntegralRecordQuery;
 import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.service.EmailCodeService;
 import fun.masttf.service.UserInfoService;
-import fun.masttf.utils.JsonUtils;
-import fun.masttf.utils.OKHttpUtils;
 import fun.masttf.utils.StringTools;
 import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.UserInfoMapper;
@@ -44,8 +41,6 @@ import fun.masttf.entity.enums.UserStatusEnum;
  */
 @Service("userInfoService")
 public class UserInfoServiceImpl implements UserInfoService {
-	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserInfoServiceImpl.class);
-
 	@Autowired
 	private EmailCodeService emailCodeService;
 
@@ -239,7 +234,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 		}
 		UserInfo userInfo = userInfoMapper.selectByUserId(userId);
 		if(UserIntegralChangeTypeEnum.REDUCE.getChangeType().equals(changeType) && userInfo.getCurrentIntegral() + integral < 0){
-			integral = changeType * userInfo.getCurrentIntegral();
+			throw new BusinessException("用户积分不足");
 		}
 
 		UserIntegralRecord record = new UserIntegralRecord();
@@ -248,7 +243,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 		record.setCreateTime(new Date());
 		record.setIntegral(integral);
 		userIntegralRecordMapper.insert(record);
-		//在数据库判断减后积分要>=0
+		//在数据库判断减后积分要>=0,确保积分不为负数
 		//如果不行事物会滚
 		Integer res = userInfoMapper.updateIntegral(userId, integral);
 		if(res == 0){
@@ -257,7 +252,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 	}
 
 	@Override
-	public SessionWebUserDto login(String email, String password, String ip) {
+	public SessionWebUserDto login(String email, String password, String ip, String province) {
 		UserInfo userInfo = userInfoMapper.selectByEmail(email);
 		// logger.info(userInfo.toString());
 		if(userInfo == null || !userInfo.getPassword().equals(password)){
@@ -266,15 +261,14 @@ public class UserInfoServiceImpl implements UserInfoService {
 		if(userInfo.getStatus() == UserStatusEnum.DISABLE.getStatus()){
 			throw new BusinessException("用户已被禁用");
 		}
-		String ipAddress = getIpAddress(ip);
 		UserInfo updateInfo = new UserInfo();
 		updateInfo.setLastLoginTime(new Date());
 		updateInfo.setLastLoginIp(ip);
-		updateInfo.setLastLoginIpAddress(ipAddress);
+		updateInfo.setLastLoginIpAddress(province);
 		userInfoMapper.updateByUserId(updateInfo, userInfo.getUserId());
 		SessionWebUserDto sessionWebUserDto = new SessionWebUserDto();
 		sessionWebUserDto.setNickName(userInfo.getNickName());
-		sessionWebUserDto.setProvice(ipAddress);
+		sessionWebUserDto.setProvice(province);
 		sessionWebUserDto.setUserId(userInfo.getUserId());
 		if(!StringTools.isEmpty(webConfig.getAdminEmails()) && ArrayUtils.contains(webConfig.getAdminEmails().split(","), email)){
 			sessionWebUserDto.setIsAdmin(true);
@@ -283,20 +277,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 		}
 		return sessionWebUserDto;
 	}
-	public String getIpAddress(String ip) {
-		try {
-			String url = "http://whois.pconline.com.cn/ipJson.jsp?json=true&ip=" + ip;
-			String responseJson = OKHttpUtils.getRequest(url);
-			if(responseJson == null) {
-				return Constans.NO_ADDRESS;
-			}
-			Map<String, String> addressInfo = JsonUtils.convertJson2Obj(responseJson, Map.class);
-			return addressInfo.get("pro");
-		} catch (Exception e) {
-			logger.error("获取ip地址失败", e);
-		}
-		return Constans.NO_ADDRESS;
-	}
+	
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)

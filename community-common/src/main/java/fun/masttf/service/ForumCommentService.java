@@ -1,6 +1,9 @@
 package fun.masttf.service;
 
 import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.entity.po.ForumComment;
 import fun.masttf.entity.query.ForumCommentQuery;
@@ -60,4 +63,5 @@ public interface ForumCommentService {
 
 	void changeTopType(String userId,Integer commentId, Integer topType);
 
+	void postComment(ForumComment comment, MultipartFile image);
 }

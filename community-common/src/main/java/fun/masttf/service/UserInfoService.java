@@ -1,9 +1,6 @@
 package fun.masttf.service;
 
 import java.util.List;
-
-import javax.mail.Session;
-
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.UserIntegralOperTypeEnum;
@@ -97,7 +94,7 @@ public interface UserInfoService {
 
 	void updateUserIntegral(String userId, UserIntegralOperTypeEnum operTypeEnum, Integer changeType, Integer integral);
 
-	SessionWebUserDto login(String email, String password, String ip);
+	SessionWebUserDto login(String email, String password, String ip, String province);
 
 	void resetPwd(String email, String emailCode, String password);
 }

@@ -1,26 +1,41 @@
 package fun.masttf.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.xml.stream.events.Comment;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.entity.po.ForumArticle;
 import fun.masttf.entity.po.ForumComment;
+import fun.masttf.entity.po.UserInfo;
+import fun.masttf.entity.po.UserMessage;
 import fun.masttf.entity.query.ForumCommentQuery;
 import fun.masttf.service.ForumCommentService;
+import fun.masttf.service.UserInfoService;
+import fun.masttf.utils.StringTools;
+import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.ForumArticleMapper;
 import fun.masttf.mapper.ForumCommentMapper;
+import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.entity.query.UserMessageQuery;
+import fun.masttf.entity.enums.ArticleOrCommentStatusEnum;
 import fun.masttf.entity.enums.CommentOrderTypeEnum;
 import fun.masttf.entity.enums.CommentTopTypeEnum;
+import fun.masttf.entity.enums.MessageStatusEnum;
+import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
 import fun.masttf.entity.enums.ResponseCodeEnum;
+import fun.masttf.entity.enums.UpdateArticleCountTypeEnum;
+import fun.masttf.entity.enums.UserIntegralChangeTypeEnum;
+import fun.masttf.entity.enums.UserIntegralOperTypeEnum;
 
 /**
  * @Description:评论Serviece
@@ -35,6 +50,10 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 	private ForumCommentMapper<ForumComment, ForumCommentQuery> forumCommentMapper;
 	@Autowired
 	private ForumArticleMapper<ForumArticle, ForumCommentQuery> forumArticleMapper;
+	@Autowired
+	private UserInfoService userInfoService;
+	@Autowired
+	private UserMessageMapper<UserMessage,UserMessageQuery> userMessageMapper;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -53,7 +72,7 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 			List<ForumComment> subList = forumCommentMapper.selectList(subQuery);
 			Map<Integer, List<ForumComment>> subMap = subList.stream().collect(Collectors.groupingBy(ForumComment::getpCommentId));
 			list.forEach(comment -> {
-				comment.setReplyList(subMap.get(comment.getCommentId()));
+				comment.setChildren(subMap.get(comment.getCommentId()));
 			});
 		}
 		return list;
@@ -164,5 +183,74 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 		updateComment.setTopType(topTypeEnum.getType());
 		forumCommentMapper.updateByCommentId(updateComment, commentId);
 		return ;
+	}
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void postComment(ForumComment comment, MultipartFile image){
+		ForumArticle article = forumArticleMapper.selectByArticleId(comment.getArticleId());
+		if(article == null || !article.getStatus().equals(ArticleOrCommentStatusEnum.AUDIT.getStatus())) {
+			throw new BusinessException("回复的文章不存在");
+		}
+		ForumComment parent = null;
+		if(comment.getpCommentId() != 0){
+			parent = forumCommentMapper.selectByCommentId(comment.getpCommentId());
+			if(parent == null) {
+				throw new BusinessException("回复的评论不存在");
+			}
+		}
+		if(!StringTools.isEmpty(comment.getReplyUserId())){
+			UserInfo user = userInfoService.getByUserId(comment.getReplyUserId());
+			if(user == null) {
+				throw new BusinessException("回复的用户不存在");
+			}
+			comment.setReplyNickName(user.getNickName());
+		}
+		if(image != null) {
+
+		}
+		Boolean needAudit = SysCacheUtils.getSysSetting().getAuditSetting().getCommentAudit();
+		if(needAudit) {
+			comment.setStatus(ArticleOrCommentStatusEnum.NO_AUDIT.getStatus());
+		} else {
+			comment.setStatus(ArticleOrCommentStatusEnum.AUDIT.getStatus());
+		}
+		forumCommentMapper.insert(comment);
+		if(needAudit) {
+			return ;
+		}
+		updateCommentInfo(comment, article, parent);
+	}
+	public void updateCommentInfo(ForumComment comment, ForumArticle article, ForumComment pComment) {
+		Integer commentIntegral = SysCacheUtils.getSysSetting().getCommentSetting().getCommentIntegral();
+		if(commentIntegral != null && commentIntegral > 0) {
+			userInfoService.updateUserIntegral(comment.getUserId(), UserIntegralOperTypeEnum.POST_COMMENT, UserIntegralChangeTypeEnum.ADD.getChangeType(), commentIntegral);
+		}
+		//更新评论数
+		forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.COMMENT_COUNT.getType(), 1, article.getArticleId());
+		UserMessage userMessage = new UserMessage();
+		userMessage.setArticleId(article.getArticleId());
+		userMessage.setArticleTitle(article.getTitle());
+		userMessage.setCreateTime(new Date());
+		userMessage.setMessageType(MessageTypeEnum.COMMENT.getType());
+		userMessage.setSendNickName(comment.getNickName());
+		userMessage.setSendUserId(comment.getUserId());
+		userMessage.setStatus(MessageStatusEnum.NO_READ.getStatus());
+		//自增id插入返回了
+		userMessage.setCommentId(comment.getCommentId());
+		if(comment.getpCommentId() == 0) {
+			userMessage.setReceivedUserId(article.getUserId());
+			userMessage.setMessageContent(comment.getNickName() + "评论了你的文章");
+		} else if(comment.getpCommentId() != 0 && StringTools.isEmpty(comment.getReplyUserId())) {
+			userMessage.setReceivedUserId(pComment.getUserId());
+			userMessage.setMessageContent(comment.getNickName() + "回复了你的评论");
+		} else if(comment.getpCommentId() != 0 && !StringTools.isEmpty(comment.getReplyUserId())) {
+			userMessage.setReceivedUserId(comment.getReplyUserId());
+			userMessage.setMessageContent(comment.getNickName() + "回复了你");
+		} else {
+			throw new BusinessException("消息发送失败");
+		}
+		if(!comment.getUserId().equals(userMessage.getReceivedUserId())) {
+			userMessageMapper.insert(userMessage);
+		}
 	}
 }

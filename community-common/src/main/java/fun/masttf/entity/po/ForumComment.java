@@ -98,7 +98,7 @@ public class ForumComment implements Serializable {
 	/*
 	 * 评论的回复列表
 	 */
-	private List<ForumComment> replyList;
+	private List<ForumComment> children;
 	
 	public Integer getLikeType() {
 		return likeType;
@@ -108,12 +108,12 @@ public class ForumComment implements Serializable {
 		this.likeType = likeType;
 	}
 
-	public List<ForumComment> getReplyList() {
-		return replyList;
+	public List<ForumComment> getChildren() {
+		return children;
 	}
 
-	public void setReplyList(List<ForumComment> replyList) {
-		this.replyList = replyList;
+	public void setChildren(List<ForumComment> replyList) {
+		this.children = replyList;
 	}
 
 

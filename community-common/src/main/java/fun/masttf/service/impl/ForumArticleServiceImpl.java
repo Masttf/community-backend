@@ -11,7 +11,7 @@ import fun.masttf.service.ForumArticleService;
 import fun.masttf.mapper.ForumArticleMapper;
 import fun.masttf.entity.query.SimplePage;
 import fun.masttf.entity.constans.Constans;
-import fun.masttf.entity.enums.ArticleStatusEnum;
+import fun.masttf.entity.enums.ArticleOrCommentStatusEnum;
 import fun.masttf.entity.enums.PageSize;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 import fun.masttf.entity.enums.UpdateArticleCountTypeEnum;
@@ -118,7 +118,7 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 		if (article == null) {
 			throw new BusinessException(ResponseCodeEnum.CODE_404);
 		}
-		if(ArticleStatusEnum.AUDIT.getStatus().equals(article.getStatus())) {
+		if(ArticleOrCommentStatusEnum.AUDIT.getStatus().equals(article.getStatus())) {
 			forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.READ_COUNT.getType(), Constans.ONE, articleId);
 			article.setReadCount(article.getReadCount() + Constans.ONE);
 		}

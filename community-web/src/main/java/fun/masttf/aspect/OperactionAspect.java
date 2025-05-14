@@ -68,7 +68,12 @@ public class OperactionAspect {
     }
 
     private void checkLogin() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (requestAttributes == null) {
+            // 如果不在Web请求上下文中，抛出异常
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        HttpServletRequest request = requestAttributes.getRequest();
         HttpSession session = request.getSession();
         SessionWebUserDto userDto = (SessionWebUserDto) session.getAttribute(Constans.SESSION_KEY);
         if(userDto == null){

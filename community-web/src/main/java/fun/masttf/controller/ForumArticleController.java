@@ -22,7 +22,7 @@ import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.ArticleOrderTypeEnum;
-import fun.masttf.entity.enums.ArticleStatusEnum;
+import fun.masttf.entity.enums.ArticleOrCommentStatusEnum;
 import fun.masttf.entity.enums.OperRecordOpTypeEnum;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 import fun.masttf.entity.po.ForumArticle;
@@ -75,7 +75,7 @@ public class ForumArticleController extends ABaseController {
         if(userDto != null) {
             articleQuery.setCurrentUserId(userDto.getUserId());
         }else{
-            articleQuery.setStatus(ArticleStatusEnum.AUDIT.getStatus());
+            articleQuery.setStatus(ArticleOrCommentStatusEnum.AUDIT.getStatus());
         }
         ArticleOrderTypeEnum orderTypeEnum = ArticleOrderTypeEnum.getByType(orderType);
         orderTypeEnum = orderTypeEnum == null ? ArticleOrderTypeEnum.HOT : orderTypeEnum;
@@ -90,7 +90,7 @@ public class ForumArticleController extends ABaseController {
         SessionWebUserDto userDto = getUserInfoSession(session);
         ForumArticle article = forumArticleService.readArticle(articleId);
         Boolean canShowNoAudit = (userDto == null || !article.getUserId().equals(userDto.getUserId()));
-        if(article == null || article.getStatus() == ArticleStatusEnum.DEL.getStatus() || (article.getStatus() == ArticleStatusEnum.NO_AUDIT.getStatus() && !canShowNoAudit)) {
+        if(article == null || article.getStatus() == ArticleOrCommentStatusEnum.DEL.getStatus() || (article.getStatus() == ArticleOrCommentStatusEnum.NO_AUDIT.getStatus() && !canShowNoAudit)) {
             throw new BusinessException(ResponseCodeEnum.CODE_404);
         }
         ForumArticleDetailVo detailVo = new ForumArticleDetailVo();

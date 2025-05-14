@@ -24,4 +24,14 @@ public class StringTools {
     public static String getFileSuffix(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
+
+    public static String escapeHtml(String content) {
+        if(isEmpty(content)) {
+            return content;
+        }
+        return content.replace(" ", "&nbsp;")
+                .replace("<", "&lt;")
+                .replace("\n", "<br/>");
+                
+    }
 }

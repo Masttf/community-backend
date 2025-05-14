@@ -4,9 +4,16 @@ import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.utils.CopyTools;
+import fun.masttf.utils.JsonUtils;
+import fun.masttf.utils.OKHttpUtils;
+
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
 
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
@@ -15,6 +22,8 @@ public class ABaseController {
     protected static final String STATUC_SUCCESS = "success";
 
     protected static final String STATUC_ERROR = "error";
+
+    private static final Logger logger = LoggerFactory.getLogger(ABaseController.class);
 
     protected <T> ResponseVo<T> getSuccessResponseVo(T t) {
         ResponseVo<T> responseVo = new ResponseVo<T>();
@@ -75,6 +84,20 @@ public class ABaseController {
         }
         return ip;
     }
+    public String getIpProvince(String ip) {
+		try {
+			String url = "http://whois.pconline.com.cn/ipJson.jsp?json=true&ip=" + ip;
+			String responseJson = OKHttpUtils.getRequest(url);
+			if(responseJson == null) {
+				return Constans.NO_ADDRESS;
+			}
+			Map<String, String> addressInfo = JsonUtils.convertJson2Obj(responseJson, Map.class);
+			return addressInfo.get("pro");
+		} catch (Exception e) {
+			logger.error("获取ip地址失败", e);
+		}
+		return Constans.NO_ADDRESS;
+	}
 
     protected SessionWebUserDto getUserInfoSession(HttpSession session) {
         return (SessionWebUserDto) session.getAttribute(Constans.SESSION_KEY);

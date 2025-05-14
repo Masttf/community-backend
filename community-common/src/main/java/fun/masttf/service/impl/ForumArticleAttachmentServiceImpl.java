@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.apache.tomcat.jni.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.exception.BusinessException;
@@ -12,24 +11,22 @@ import fun.masttf.entity.po.ForumArticle;
 import fun.masttf.entity.po.ForumArticleAttachment;
 import fun.masttf.entity.po.ForumArticleAttachmentDownload;
 import fun.masttf.entity.po.UserInfo;
-import fun.masttf.entity.po.UserIntegralRecord;
 import fun.masttf.entity.po.UserMessage;
 import fun.masttf.entity.query.ForumArticleAttachmentQuery;
 import fun.masttf.entity.query.ForumArticleQuery;
 import fun.masttf.service.ForumArticleAttachmentService;
+import fun.masttf.service.UserInfoService;
 import fun.masttf.mapper.ForumArticleAttachmentDownloadMapper;
 import fun.masttf.mapper.ForumArticleAttachmentMapper;
 import fun.masttf.mapper.ForumArticleMapper;
-import fun.masttf.mapper.UserInfoMapper;
-import fun.masttf.mapper.UserIntegralRecordMapper;
 import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
-import fun.masttf.entity.query.UserInfoQuery;
 import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.MessageStatusEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
+import fun.masttf.entity.enums.UserIntegralChangeTypeEnum;
 import fun.masttf.entity.enums.UserIntegralOperTypeEnum;
 
 /**
@@ -46,9 +43,7 @@ public class ForumArticleAttachmentServiceImpl implements ForumArticleAttachment
 	@Autowired
 	private ForumArticleAttachmentDownloadMapper<ForumArticleAttachmentDownload, ForumArticleAttachmentQuery> forumArticleAttachmentDownloadMapper;
 	@Autowired
-	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
-	@Autowired
-	private UserIntegralRecordMapper<UserIntegralRecord, UserIntegralRecordQuery> userIntegralRecordMapper;
+	private UserInfoService userInfoService;
 	@Autowired
 	private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
 	@Autowired
@@ -156,7 +151,7 @@ public class ForumArticleAttachmentServiceImpl implements ForumArticleAttachment
 		if(!attachment.getUserId().equals(userDto.getUserId())) {
 			attachmentDownload = forumArticleAttachmentDownloadMapper.selectByFileIdAndUserId(fileId, userDto.getUserId());
 			if(attachmentDownload == null) {
-				UserInfo userInfo = userInfoMapper.selectByUserId(userDto.getUserId());
+				UserInfo userInfo = userInfoService.getByUserId(userDto.getUserId());
 				if(userInfo.getCurrentIntegral() < attachment.getIntegral()) {
 					throw new BusinessException("积分不足");
 				}
@@ -175,21 +170,9 @@ public class ForumArticleAttachmentServiceImpl implements ForumArticleAttachment
 			return attachment;
 		}
 		//扣除积分
-		userInfoMapper.updateIntegral(userDto.getUserId(), -attachment.getIntegral());
-		UserIntegralRecord record = new UserIntegralRecord();
-		record.setCreateTime(new Date());
-		record.setIntegral(attachment.getIntegral());
-		record.setOperType(UserIntegralOperTypeEnum.DOWNLOAD_ATTACHMENT.getOperType());
-		record.setUserId(userDto.getUserId());
-		userIntegralRecordMapper.insert(record);
+		userInfoService.updateUserIntegral(userDto.getUserId(), UserIntegralOperTypeEnum.DOWNLOAD_ATTACHMENT,UserIntegralChangeTypeEnum.REDUCE.getChangeType(), attachment.getIntegral());
 		//增加积分
-		userInfoMapper.updateIntegral(attachment.getUserId(), attachment.getIntegral());
-		UserIntegralRecord record2 = new UserIntegralRecord();
-		record2.setCreateTime(new Date());
-		record2.setIntegral(attachment.getIntegral());
-		record2.setOperType(UserIntegralOperTypeEnum.DOWNLOAD_ATTACHMENT.getOperType());
-		record2.setUserId(attachment.getUserId());
-		userIntegralRecordMapper.insert(record2);
+		userInfoService.updateUserIntegral(attachment.getUserId(), UserIntegralOperTypeEnum.DOWNLOAD_ATTACHMENT,UserIntegralChangeTypeEnum.ADD.getChangeType(), attachment.getIntegral());
 
 		//发送消息
 		ForumArticle article = forumArticleMapper.selectByArticleId(attachment.getArticleId());
