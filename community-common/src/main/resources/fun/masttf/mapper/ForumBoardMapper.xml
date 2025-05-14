@@ -83,10 +83,7 @@
 	</select>
 
 	<!-- 插入(匹配有效值) -->
-	<insert id="insert">
-		<selectKey keyProperty="boardId" resultType="Integer" order="AFTER">
-			SELECT LAST_INSERT_ID()
-		</selectKey>
+	<insert id="insert" useGeneratedKeys="true" keyProperty="boardId">
 		INSERT INTO forum_board
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="bean.pBoardId != null">

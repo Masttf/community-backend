@@ -118,10 +118,7 @@
 	</select>
 
 	<!-- 插入(匹配有效值) -->
-	<insert id="insert">
-		<selectKey keyProperty="messageId" resultType="Integer" order="AFTER">
-			SELECT LAST_INSERT_ID()
-		</selectKey>
+	<insert id="insert" useGeneratedKeys="true" keyProperty="messageId">
 		INSERT INTO user_message
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="bean.receivedUserId != null">

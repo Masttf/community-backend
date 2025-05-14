@@ -73,10 +73,7 @@
 	</select>
 
 	<!-- 插入(匹配有效值) -->
-	<insert id="insert">
-		<selectKey keyProperty="recordId" resultType="Integer" order="AFTER">
-			SELECT LAST_INSERT_ID()
-		</selectKey>
+	<insert id="insert" useGeneratedKeys="true" keyProperty="recordId">
 		INSERT INTO user_integral_record
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="bean.userId != null">

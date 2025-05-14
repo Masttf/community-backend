@@ -84,10 +84,7 @@
 	</select>
 
 	<!-- 插入(匹配有效值) -->
-	<insert id="insert">
-		<selectKey keyProperty="opId" resultType="Integer" order="AFTER">
-			SELECT LAST_INSERT_ID()
-		</selectKey>
+	<insert id="insert" useGeneratedKeys="true" keyProperty="opId">
 		INSERT INTO like_record
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="bean.opType != null">
