@@ -19,6 +19,7 @@ import fun.masttf.entity.po.UserMessage;
 import fun.masttf.entity.query.ForumCommentQuery;
 import fun.masttf.service.ForumCommentService;
 import fun.masttf.service.UserInfoService;
+import fun.masttf.utils.FileUtils;
 import fun.masttf.utils.StringTools;
 import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.ForumArticleMapper;
@@ -26,9 +27,11 @@ import fun.masttf.mapper.ForumCommentMapper;
 import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
 import fun.masttf.entity.query.UserMessageQuery;
+import fun.masttf.entity.dto.FileUploadDto;
 import fun.masttf.entity.enums.ArticleOrCommentStatusEnum;
 import fun.masttf.entity.enums.CommentOrderTypeEnum;
 import fun.masttf.entity.enums.CommentTopTypeEnum;
+import fun.masttf.entity.enums.FileUploadEnum;
 import fun.masttf.entity.enums.MessageStatusEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
@@ -54,6 +57,8 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 	private UserInfoService userInfoService;
 	@Autowired
 	private UserMessageMapper<UserMessage,UserMessageQuery> userMessageMapper;
+	@Autowired
+	private FileUtils fileUtils;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -206,7 +211,8 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 			comment.setReplyNickName(user.getNickName());
 		}
 		if(image != null) {
-
+			FileUploadDto uploadDto = fileUtils.uploadFile2Local(image, FileUploadEnum.COMMENT_IMAGE);
+			comment.setImgPath(uploadDto.getLocalPath());
 		}
 		Boolean needAudit = SysCacheUtils.getSysSetting().getAuditSetting().getCommentAudit();
 		if(needAudit) {

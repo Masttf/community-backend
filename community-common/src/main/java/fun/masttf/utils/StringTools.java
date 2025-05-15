@@ -24,7 +24,9 @@ public class StringTools {
     public static String getFileSuffix(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
-
+    public static String getFileName(String fileName) {
+        return fileName.substring(0, fileName.lastIndexOf("."));
+    }
     public static String escapeHtml(String content) {
         if(isEmpty(content)) {
             return content;

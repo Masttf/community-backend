@@ -20,10 +20,11 @@ import org.springframework.web.multipart.MultipartFile;
 import fun.masttf.annotation.GlobalInterceptor;
 import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
+import fun.masttf.entity.dto.FileUploadDto;
 import fun.masttf.entity.dto.SessionWebUserDto;
-import fun.masttf.entity.enums.ImageFolderEnum;
+import fun.masttf.entity.enums.DateTimePatternEnum;
+import fun.masttf.entity.enums.FileUploadEnum;
 import fun.masttf.entity.enums.ResponseCodeEnum;
-import fun.masttf.entity.vo.ImageFileVo;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.utils.DateUtils;
@@ -47,11 +48,12 @@ public class FileController extends ABaseController {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         String fileRealName = StringTools.getRandomString(Constans.LENGTH_30) + "." + suffix;
-        String dateStr = DateUtils.format(new Date(), "yyyyMMdd");
-        copyFile(file, ImageFolderEnum.IMAGE.getFolder() + dateStr + "/", fileRealName);
-        ImageFileVo imageVo = new ImageFileVo();
-        imageVo.setFileName(fileRealName);
-        imageVo.setFilePath(dateStr + "/");
+        String dateStr = DateUtils.format(new Date(), DateTimePatternEnum.YYYY_MM.getPattern());
+        String fileFolder = FileUploadEnum.COMMENT_IMAGE.getFolder() + dateStr + "/";
+        copyFile(file, fileFolder, fileRealName);
+        FileUploadDto imageVo = new FileUploadDto();
+        imageVo.setOriginalFileName(fileName);
+        imageVo.setLocalPath(fileFolder + fileRealName);
         return getSuccessResponseVo(imageVo);
     }
 
@@ -68,10 +70,10 @@ public class FileController extends ABaseController {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         String fileRealName = userDto.getUserId() + Constans.AVATAR_SUFFIX;
-        copyFile(file, ImageFolderEnum.AVATAR.getFolder(), fileRealName);
-        ImageFileVo imageVo = new ImageFileVo();
-        imageVo.setFileName(fileRealName);
-        imageVo.setFilePath(ImageFolderEnum.AVATAR.getFolder());
+        copyFile(file, FileUploadEnum.AVATAR.getFolder(), fileRealName);
+        FileUploadDto imageVo = new FileUploadDto();
+        imageVo.setOriginalFileName(fileName);
+        imageVo.setLocalPath(FileUploadEnum.AVATAR.getFolder() + fileRealName);
         return getSuccessResponseVo(imageVo);
     }
 
@@ -79,12 +81,12 @@ public class FileController extends ABaseController {
     public void getImage(HttpServletResponse response,
                         @PathVariable("imageFolder") String imageFolder,
                         @PathVariable("imageName") String imageName) {
-        readImage(response, ImageFolderEnum.IMAGE.getFolder() + imageFolder + "/", imageName);
+        readImage(response, FileUploadEnum.COMMENT_IMAGE.getFolder() + imageFolder + "/", imageName);
     }
     @RequestMapping("getAvatar/{userId}")
     public void getAvatar(HttpServletResponse response,
                         @PathVariable("userId") String userId) {
-        String avatarFolderPath = webConfig.getProjectFolder() + Constans.FILE_FOLDER_FILE + ImageFolderEnum.AVATAR.getFolder();
+        String avatarFolderPath = webConfig.getProjectFolder() + Constans.FILE_FOLDER_FILE + FileUploadEnum.AVATAR.getFolder();
         String avatarPath = avatarFolderPath + userId + Constans.AVATAR_SUFFIX;
         File avatarFolder = new File(avatarFolderPath);
         if (!avatarFolder.exists()) {
@@ -96,7 +98,7 @@ public class FileController extends ABaseController {
         if (!avatarFile.exists()) {
             imageName = Constans.AVATAR_DEFAULT;
         }
-        readImage(response, ImageFolderEnum.AVATAR.getFolder(), imageName);
+        readImage(response, FileUploadEnum.AVATAR.getFolder(), imageName);
     }
     private void copyFile(MultipartFile file, String imageFolder, String fileRealName) {
         try {
@@ -128,7 +130,7 @@ public class FileController extends ABaseController {
             if (!file.exists()) {
                 return;
             }
-            if(!imageFolder.equals(ImageFolderEnum.AVATAR.getFolder())) {
+            if(!imageFolder.equals(FileUploadEnum.AVATAR.getFolder())) {
                 response.setContentType("Cache-Control: max-age=2592000");
             }
             response.setContentType("image/" + suffix);
