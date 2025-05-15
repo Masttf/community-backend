@@ -121,7 +121,7 @@ public class FileController extends ABaseController {
         FileInputStream in = null;
         ByteArrayOutputStream baos = null;
         try {
-            if(StringTools.isEmpty(imageName)) {
+            if(StringTools.isEmpty(imageName) || StringTools.isEmpty(imageFolder)) {
                 return ;
             }
             String suffix = StringTools.getFileSuffix(imageName);
