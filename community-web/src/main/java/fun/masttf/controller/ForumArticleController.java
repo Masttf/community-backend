@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import fun.masttf.annotation.GlobalInterceptor;
 import fun.masttf.aspect.VerifyParam;
@@ -22,8 +24,9 @@ import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.ArticleOrderTypeEnum;
-import fun.masttf.entity.enums.ArticleOrCommentStatusEnum;
-import fun.masttf.entity.enums.OperRecordOpTypeEnum;
+import fun.masttf.entity.enums.ArticleEditorTypeEnum;
+import fun.masttf.entity.enums.ArticleStatusEnum;
+import fun.masttf.entity.enums.RecordOpTypeEnum;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 import fun.masttf.entity.po.ForumArticle;
 import fun.masttf.entity.po.ForumArticleAttachment;
@@ -42,9 +45,11 @@ import fun.masttf.exception.BusinessException;
 import fun.masttf.service.ForumArticleAttachmentDownloadService;
 import fun.masttf.service.ForumArticleAttachmentService;
 import fun.masttf.service.ForumArticleService;
+import fun.masttf.service.ForumBoardService;
 import fun.masttf.service.LikeRecordService;
 import fun.masttf.service.UserInfoService;
 import fun.masttf.utils.CopyTools;
+import fun.masttf.utils.StringTools;
 
 
 @RestController
@@ -63,6 +68,8 @@ public class ForumArticleController extends ABaseController {
     private UserInfoService userInfoService;
     @Autowired
     private WebConfig webConfig;
+    @Autowired
+    private ForumBoardService forumBoardService;
     
     @RequestMapping("/loadArticle")
     public ResponseVo<Object> loadArticle(HttpSession session, Integer boardId, Integer pBoardId, Integer orderType, Integer pageNo) {
@@ -75,7 +82,7 @@ public class ForumArticleController extends ABaseController {
         if(userDto != null) {
             articleQuery.setCurrentUserId(userDto.getUserId());
         }else{
-            articleQuery.setStatus(ArticleOrCommentStatusEnum.AUDIT.getStatus());
+            articleQuery.setStatus(ArticleStatusEnum.AUDIT.getStatus());
         }
         ArticleOrderTypeEnum orderTypeEnum = ArticleOrderTypeEnum.getByType(orderType);
         orderTypeEnum = orderTypeEnum == null ? ArticleOrderTypeEnum.HOT : orderTypeEnum;
@@ -90,7 +97,7 @@ public class ForumArticleController extends ABaseController {
         SessionWebUserDto userDto = getUserInfoSession(session);
         ForumArticle article = forumArticleService.readArticle(articleId);
         Boolean canShowNoAudit = (userDto == null || !article.getUserId().equals(userDto.getUserId()));
-        if(article == null || article.getStatus() == ArticleOrCommentStatusEnum.DEL.getStatus() || (article.getStatus() == ArticleOrCommentStatusEnum.NO_AUDIT.getStatus() && !canShowNoAudit)) {
+        if(article == null || article.getStatus() == ArticleStatusEnum.DEL.getStatus() || (article.getStatus() == ArticleStatusEnum.NO_AUDIT.getStatus() && !canShowNoAudit)) {
             throw new BusinessException(ResponseCodeEnum.CODE_404);
         }
         ForumArticleDetailVo detailVo = new ForumArticleDetailVo();
@@ -107,7 +114,7 @@ public class ForumArticleController extends ABaseController {
         }
 
         if(userDto != null) {
-            LikeRecord likeRecord = likeRecordService.getByObjectIdAndUserIdAndOpType(articleId, userDto.getUserId(), OperRecordOpTypeEnum.ARTICLE_LIKE.getType());
+            LikeRecord likeRecord = likeRecordService.getByObjectIdAndUserIdAndOpType(articleId, userDto.getUserId(), RecordOpTypeEnum.ARTICLE_LIKE.getType());
             if(likeRecord != null) {
                 detailVo.setHaveLike(true);
             }
@@ -118,7 +125,7 @@ public class ForumArticleController extends ABaseController {
     @GlobalInterceptor(checkLogin = true, checkParams = true)
     public ResponseVo<Object> doLike(HttpSession session,@VerifyParam(required = true) String articleId) {
         SessionWebUserDto userDto = (SessionWebUserDto) session.getAttribute(Constans.SESSION_KEY);
-        likeRecordService.doLike(articleId, userDto.getUserId(), userDto.getNickName(), OperRecordOpTypeEnum.ARTICLE_LIKE);
+        likeRecordService.doLike(articleId, userDto.getUserId(), userDto.getNickName(), RecordOpTypeEnum.ARTICLE_LIKE);
         return getSuccessResponseVo(null);
     }
 
@@ -182,5 +189,63 @@ public class ForumArticleController extends ABaseController {
                 logger.error("关闭流失败", e);
             }
         }
+    }
+
+    @RequestMapping("/loadBoard4Post")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVo<Object> loadBoard4Post(HttpSession session) {
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        Integer postType = null;
+        if(!userDto.getIsAdmin()) {
+            postType = 1;
+        }
+        return getSuccessResponseVo(forumBoardService.getBoardTree(postType));
+    }
+
+    @RequestMapping("/postArticle")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVo<Object> postArticle(
+                            HttpServletRequest request,
+                            HttpSession session,
+                            MultipartFile cover,
+                            MultipartFile attachment,
+                            Integer integral,
+                            @VerifyParam(required = true, max = 150) String title,
+                            @VerifyParam(required = true) Integer pBoardId,
+                            Integer boardId,
+                            @VerifyParam(max = 200) String summary,
+                            @VerifyParam(required = true) String content,
+                            String markdownContent,
+                            @VerifyParam(required = true) Integer editorType) {
+        
+        ArticleEditorTypeEnum editorTypeEnum = ArticleEditorTypeEnum.getByType(editorType);
+        if(editorTypeEnum == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        if(ArticleEditorTypeEnum.MARKDOWN.getType().equals(editorType) && StringTools.isEmpty(markdownContent)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        
+        title = StringTools.escapeHtml(title);
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        
+        ForumArticle article = new ForumArticle();
+        article.setTitle(title);
+        article.setpBoardId(pBoardId);
+        article.setBoardId(boardId);
+        article.setSummary(summary);
+        article.setContent(content);
+        article.setMarkdownContent(markdownContent);
+        article.setEditorType(editorType);
+
+        article.setUserId(userDto.getUserId());
+        article.setNickName(userDto.getNickName());
+        article.setUserIpAddress(userDto.getProvice());
+
+        ForumArticleAttachment articleAttachment = new ForumArticleAttachment();
+        articleAttachment.setIntegral(integral == null ? 0 : integral);
+
+        forumArticleService.postArticle(userDto.getIsAdmin(),article, articleAttachment, cover, attachment);
+        return getSuccessResponseVo(null);
     }
 }

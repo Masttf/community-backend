@@ -1,8 +1,12 @@
 package fun.masttf.service;
 
 import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.entity.po.ForumArticle;
+import fun.masttf.entity.po.ForumArticleAttachment;
 import fun.masttf.entity.query.ForumArticleQuery;
 
 /**
@@ -59,4 +63,6 @@ public interface ForumArticleService {
 	Integer deleteByArticleId(String articleId);
 	
 	ForumArticle readArticle(String articleId);
+
+	void postArticle(Boolean isAdmin,ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment);
 }

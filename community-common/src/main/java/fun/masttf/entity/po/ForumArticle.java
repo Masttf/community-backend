@@ -131,6 +131,22 @@ public class ForumArticle implements Serializable {
 	@JsonIgnore
 	private Integer status;
 
+	public Integer getpBoardId() {
+		return pBoardId;
+	}
+
+	public void setpBoardId(Integer pBoardId) {
+		this.pBoardId = pBoardId;
+	}
+
+	public String getpBoardName() {
+		return pBoardName;
+	}
+
+	public void setpBoardName(String pBoardName) {
+		this.pBoardName = pBoardName;
+	}
+
 	public String getArticleId() {
 		return this.articleId;
 	}
@@ -153,22 +169,6 @@ public class ForumArticle implements Serializable {
 
 	public void setBoardName(String boardName) {
 		this.boardName = boardName;
-	}
-
-	public Integer getPBoardId() {
-		return this.pBoardId;
-	}
-
-	public void setPBoardId(Integer pBoardId) {
-		this.pBoardId = pBoardId;
-	}
-
-	public String getPBoardName() {
-		return this.pBoardName;
-	}
-
-	public void setPBoardName(String pBoardName) {
-		this.pBoardName = pBoardName;
 	}
 
 	public String getUserId() {

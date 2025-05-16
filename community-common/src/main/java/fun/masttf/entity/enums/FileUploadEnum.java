@@ -21,6 +21,18 @@ public enum FileUploadEnum {
         this.desc = desc;
         this.suffix = suffix;
     }
+
+    public static FileUploadEnum getBySuffix(String suffix) {
+        for (FileUploadEnum value : FileUploadEnum.values()) {
+            for (String s : value.getSuffix()) {
+                //忽略大小写比较
+                if (s.equalsIgnoreCase(suffix)) {
+                    return value;
+                }
+            }
+        }
+        return null;
+    }
     public String getFolder() {
         return folder;
     }

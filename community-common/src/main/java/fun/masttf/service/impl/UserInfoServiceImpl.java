@@ -255,7 +255,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 			throw new BusinessException("更新用户积分失败");
 		}
 	}
-	public String getIpProvince(String ip) {
+	private String getIpProvince(String ip) {
 		try {
 			String url = "http://whois.pconline.com.cn/ipJson.jsp?json=true&ip=" + ip;
 			String responseJson = OKHttpUtils.getRequest(url);
