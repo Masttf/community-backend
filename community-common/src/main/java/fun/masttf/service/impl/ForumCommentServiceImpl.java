@@ -28,15 +28,15 @@ import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
 import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.entity.dto.FileUploadDto;
-import fun.masttf.entity.enums.ArticleOrCommentStatusEnum;
 import fun.masttf.entity.enums.CommentOrderTypeEnum;
+import fun.masttf.entity.enums.CommentStatusEnum;
 import fun.masttf.entity.enums.CommentTopTypeEnum;
 import fun.masttf.entity.enums.FileUploadEnum;
 import fun.masttf.entity.enums.MessageStatusEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
 import fun.masttf.entity.enums.ResponseCodeEnum;
-import fun.masttf.entity.enums.UpdateArticleCountTypeEnum;
+import fun.masttf.entity.enums.ArticleCountTypeEnum;
 import fun.masttf.entity.enums.UserIntegralChangeTypeEnum;
 import fun.masttf.entity.enums.UserIntegralOperTypeEnum;
 
@@ -193,7 +193,7 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 	@Transactional(rollbackFor = Exception.class)
 	public void postComment(ForumComment comment, MultipartFile image){
 		ForumArticle article = forumArticleMapper.selectByArticleId(comment.getArticleId());
-		if(article == null || !article.getStatus().equals(ArticleOrCommentStatusEnum.AUDIT.getStatus())) {
+		if(article == null || !article.getStatus().equals(CommentStatusEnum.AUDIT.getStatus())) {
 			throw new BusinessException("回复的文章不存在");
 		}
 		ForumComment parent = null;
@@ -216,9 +216,9 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 		}
 		Boolean needAudit = SysCacheUtils.getSysSetting().getAuditSetting().getCommentAudit();
 		if(needAudit) {
-			comment.setStatus(ArticleOrCommentStatusEnum.NO_AUDIT.getStatus());
+			comment.setStatus(CommentStatusEnum.NO_AUDIT.getStatus());
 		} else {
-			comment.setStatus(ArticleOrCommentStatusEnum.AUDIT.getStatus());
+			comment.setStatus(CommentStatusEnum.AUDIT.getStatus());
 		}
 		forumCommentMapper.insert(comment);
 		if(needAudit) {
@@ -232,7 +232,7 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 			userInfoService.updateUserIntegral(comment.getUserId(), UserIntegralOperTypeEnum.POST_COMMENT, UserIntegralChangeTypeEnum.ADD.getChangeType(), commentIntegral);
 		}
 		//更新评论数
-		forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.COMMENT_COUNT.getType(), 1, article.getArticleId());
+		forumArticleMapper.updateArticleCount(ArticleCountTypeEnum.COMMENT_COUNT.getType(), 1, article.getArticleId());
 		UserMessage userMessage = new UserMessage();
 		userMessage.setArticleId(article.getArticleId());
 		userMessage.setArticleTitle(article.getTitle());

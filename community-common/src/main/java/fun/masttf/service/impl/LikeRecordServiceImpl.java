@@ -23,9 +23,9 @@ import fun.masttf.entity.query.SimplePage;
 import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.entity.enums.MessageStatusEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
-import fun.masttf.entity.enums.OperRecordOpTypeEnum;
+import fun.masttf.entity.enums.RecordOpTypeEnum;
 import fun.masttf.entity.enums.PageSize;
-import fun.masttf.entity.enums.UpdateArticleCountTypeEnum;
+import fun.masttf.entity.enums.ArticleCountTypeEnum;
 
 /**
  * @Description:点赞记录Serviece
@@ -158,7 +158,7 @@ public class LikeRecordServiceImpl implements LikeRecordService {
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void doLike(String objectId, String userId, String nickName, OperRecordOpTypeEnum opTypeEnum) {
+	public void doLike(String objectId, String userId, String nickName, RecordOpTypeEnum opTypeEnum) {
 		UserMessage userMessage = new UserMessage();
 		switch(opTypeEnum) {
 			case ARTICLE_LIKE:
@@ -201,35 +201,35 @@ public class LikeRecordServiceImpl implements LikeRecordService {
 	}
 
 	public void articleLike(ForumArticle article, String userId) {
-		LikeRecord likeRecord = likeRecordMapper.selectByObjectIdAndUserIdAndOpType(article.getArticleId(), userId, OperRecordOpTypeEnum.ARTICLE_LIKE.getType());
+		LikeRecord likeRecord = likeRecordMapper.selectByObjectIdAndUserIdAndOpType(article.getArticleId(), userId, RecordOpTypeEnum.ARTICLE_LIKE.getType());
 		if(likeRecord == null) {
 			likeRecord = new LikeRecord();
 			likeRecord.setObjectId(article.getArticleId());
 			likeRecord.setUserId(userId);
-			likeRecord.setOpType(OperRecordOpTypeEnum.ARTICLE_LIKE.getType());
+			likeRecord.setOpType(RecordOpTypeEnum.ARTICLE_LIKE.getType());
 			likeRecord.setCreateTime(new Date());
 			likeRecord.setAuthorUserId(article.getUserId());
 			likeRecordMapper.insert(likeRecord);
-			forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.GOOD_COUNT.getType(), -1, article.getArticleId());
+			forumArticleMapper.updateArticleCount(ArticleCountTypeEnum.GOOD_COUNT.getType(), -1, article.getArticleId());
 		} else {
-			likeRecordMapper.deleteByObjectIdAndUserIdAndOpType(article.getArticleId(), userId, OperRecordOpTypeEnum.ARTICLE_LIKE.getType());
-			forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.GOOD_COUNT.getType(), 1, article.getArticleId());
+			likeRecordMapper.deleteByObjectIdAndUserIdAndOpType(article.getArticleId(), userId, RecordOpTypeEnum.ARTICLE_LIKE.getType());
+			forumArticleMapper.updateArticleCount(ArticleCountTypeEnum.GOOD_COUNT.getType(), 1, article.getArticleId());
 		}
 	}
 
 	public void commentLike(String objectId, ForumComment comment, String userId) {
-		LikeRecord likeRecord = likeRecordMapper.selectByObjectIdAndUserIdAndOpType(objectId, userId, OperRecordOpTypeEnum.COMMENT_LIKE.getType());
+		LikeRecord likeRecord = likeRecordMapper.selectByObjectIdAndUserIdAndOpType(objectId, userId, RecordOpTypeEnum.COMMENT_LIKE.getType());
 		if(likeRecord == null) {
 			likeRecord = new LikeRecord();
 			likeRecord.setObjectId(objectId);
 			likeRecord.setUserId(userId);
-			likeRecord.setOpType(OperRecordOpTypeEnum.COMMENT_LIKE.getType());
+			likeRecord.setOpType(RecordOpTypeEnum.COMMENT_LIKE.getType());
 			likeRecord.setCreateTime(new Date());
 			likeRecord.setAuthorUserId(comment.getUserId());
 			likeRecordMapper.insert(likeRecord);
 			forumCommentMapper.updateCommentGoodCount(-1, comment.getCommentId());
 		} else {
-			likeRecordMapper.deleteByObjectIdAndUserIdAndOpType(objectId, userId, OperRecordOpTypeEnum.COMMENT_LIKE.getType());
+			likeRecordMapper.deleteByObjectIdAndUserIdAndOpType(objectId, userId, RecordOpTypeEnum.COMMENT_LIKE.getType());
 			forumCommentMapper.updateCommentGoodCount(1, comment.getCommentId());
 		}
 	}

@@ -1,13 +1,13 @@
 package fun.masttf.entity.enums;
 
-public enum OperRecordOpTypeEnum {
+public enum RecordOpTypeEnum {
     ARTICLE_LIKE(0, "文章点赞"),
     COMMENT_LIKE(1, "评论点赞");
 
     private Integer type;
     private String desc;
 
-    private OperRecordOpTypeEnum(Integer type, String desc) {
+    private RecordOpTypeEnum(Integer type, String desc) {
         this.type = type;
         this.desc = desc;
     }

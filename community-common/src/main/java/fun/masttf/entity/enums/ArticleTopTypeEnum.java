@@ -1,17 +1,17 @@
 package fun.masttf.entity.enums;
 
-public enum CommentTopTypeEnum {
+public enum ArticleTopTypeEnum {
     NOT_TOP(0, "未置顶"),
     TOP(1, "置顶");
     private Integer type;
     private String desc;
 
-    CommentTopTypeEnum(Integer type, String desc) {
+    ArticleTopTypeEnum(Integer type, String desc) {
         this.type = type;
         this.desc = desc;
     }
-    public static CommentTopTypeEnum getByType(Integer type) {
-        for (CommentTopTypeEnum value : CommentTopTypeEnum.values()) {
+    public static ArticleTopTypeEnum getByType(Integer type) {
+        for (ArticleTopTypeEnum value : ArticleTopTypeEnum.values()) {
             if (value.getType().equals(type)) {
                 return value;
             }

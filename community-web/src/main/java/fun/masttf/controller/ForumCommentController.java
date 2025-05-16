@@ -14,10 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 import fun.masttf.annotation.GlobalInterceptor;
 import fun.masttf.aspect.VerifyParam;
 import fun.masttf.entity.dto.SessionWebUserDto;
-import fun.masttf.entity.enums.ArticleOrCommentStatusEnum;
 import fun.masttf.entity.enums.CommentOrderTypeEnum;
+import fun.masttf.entity.enums.CommentStatusEnum;
 import fun.masttf.entity.enums.CommentTopTypeEnum;
-import fun.masttf.entity.enums.OperRecordOpTypeEnum;
+import fun.masttf.entity.enums.RecordOpTypeEnum;
 import fun.masttf.entity.enums.PageSize;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 import fun.masttf.entity.po.ForumComment;
@@ -62,7 +62,7 @@ public class ForumCommentController extends ABaseController {
             query.setQueryLikeType(true);
             query.setCurrentUserId(userDto.getUserId());
         } else{
-            query.setStatus(ArticleOrCommentStatusEnum.AUDIT.getStatus());
+            query.setStatus(CommentStatusEnum.AUDIT.getStatus());
         }
 
         return getSuccessResponseVo(forumCommentService.findListByPage(query));
@@ -74,8 +74,8 @@ public class ForumCommentController extends ABaseController {
                     @VerifyParam(required = true) Integer commentId) {
         SessionWebUserDto userDto = getUserInfoSession(session);
         String objectId = String.valueOf(commentId);
-        likeRecordService.doLike(objectId, userDto.getUserId(), userDto.getNickName(), OperRecordOpTypeEnum.COMMENT_LIKE);
-        LikeRecord likeRecord = likeRecordService.getByObjectIdAndUserIdAndOpType(objectId, userDto.getUserId(), OperRecordOpTypeEnum.COMMENT_LIKE.getType());
+        likeRecordService.doLike(objectId, userDto.getUserId(), userDto.getNickName(), RecordOpTypeEnum.COMMENT_LIKE);
+        LikeRecord likeRecord = likeRecordService.getByObjectIdAndUserIdAndOpType(objectId, userDto.getUserId(), RecordOpTypeEnum.COMMENT_LIKE.getType());
         ForumComment comment = forumCommentService.getByCommentId(commentId);
         comment.setLikeType(likeRecord == null ? 0 : 1);
         return getSuccessResponseVo(comment);
@@ -107,8 +107,6 @@ public class ForumCommentController extends ABaseController {
         if(image == null && StringTools.isEmpty(content)) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
-        String ip = getIpAddr(request);
-        String province = getIpProvince(ip);
         SessionWebUserDto userDto = getUserInfoSession(session);
         content = StringTools.escapeHtml(content);
         ForumComment comment = new ForumComment();
@@ -119,7 +117,7 @@ public class ForumCommentController extends ABaseController {
         comment.setPostTime(new Date());
         comment.setReplyUserId(replyUserId);
         comment.setNickName(userDto.getNickName());
-        comment.setUserIpAddress(province);
+        comment.setUserIpAddress(userDto.getProvice());
         comment.setTopType(CommentTopTypeEnum.NOT_TOP.getType());
         forumCommentService.postComment(comment, image);
         if(pCommentId != 0){

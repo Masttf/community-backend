@@ -2,7 +2,7 @@ package fun.masttf.service;
 
 import java.util.List;
 import fun.masttf.entity.vo.PaginationResultVo;
-import fun.masttf.entity.enums.OperRecordOpTypeEnum;
+import fun.masttf.entity.enums.RecordOpTypeEnum;
 import fun.masttf.entity.po.LikeRecord;
 import fun.masttf.entity.query.LikeRecordQuery;
 
@@ -74,5 +74,5 @@ public interface LikeRecordService {
 	 */
 	Integer deleteByObjectIdAndUserIdAndOpType(String objectId, String userId, Integer opType);
 
-	void doLike(String objectId, String userId, String nickName, OperRecordOpTypeEnum opTypeEnum);
+	void doLike(String objectId, String userId, String nickName, RecordOpTypeEnum opTypeEnum);
 }
