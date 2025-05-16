@@ -15,6 +15,7 @@ import fun.masttf.entity.query.ForumBoardQuery;
 import fun.masttf.service.ForumArticleService;
 import fun.masttf.service.UserInfoService;
 import fun.masttf.utils.FileUtils;
+import fun.masttf.utils.ImageUtils;
 import fun.masttf.utils.StringTools;
 import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.ForumArticleAttachmentMapper;
@@ -54,6 +55,8 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 	private FileUtils fileUtils;
 	@Autowired
 	private UserInfoService userInfoService;
+	@Autowired
+	private ImageUtils imageUtils;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -176,13 +179,27 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 			SysSetting4AuditDto auditSetting = SysCacheUtils.getSysSetting().getAuditSetting();
 			article.setStatus(auditSetting.getPostAudit() ? ArticleStatusEnum.NO_AUDIT.getStatus() : ArticleStatusEnum.AUDIT.getStatus());
 		}
-		forumArticleMapper.insert(article);
-
+		
 		//增加积分
 		Integer postIntegral = SysCacheUtils.getSysSetting().getPostSetting().getPostIntegral();
 		if(postIntegral > 0 && article.getStatus().equals(ArticleStatusEnum.AUDIT.getStatus())) {
 			userInfoService.updateUserIntegral(article.getUserId(), UserIntegralOperTypeEnum.POST_ARTICLE, UserIntegralChangeTypeEnum.ADD.getChangeType(), postIntegral);
 		}
+		//待测试
+		//替换图片
+		String content = article.getContent();
+		if(!StringTools.isEmpty(content)) {
+			String month = imageUtils.resetImageHtml(content);
+			String replaceMonth = month + "/";
+			content = content.replaceAll(FileUploadEnum.TEMP.getFolder(), replaceMonth);
+			article.setContent(content);
+			String markdownContent = article.getMarkdownContent();
+			if(!StringTools.isEmpty(markdownContent)) {
+				markdownContent = markdownContent.replaceAll(FileUploadEnum.TEMP.getFolder(), replaceMonth);
+				article.setMarkdownContent(markdownContent);
+			}
+		}
+		forumArticleMapper.insert(article);
 	}
 
 	private void resetBoardInfo(Boolean isAdmin, ForumArticle article) {

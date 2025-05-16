@@ -21,6 +21,8 @@ public class FileUtils {
     private static Logger logger = org.slf4j.LoggerFactory.getLogger(FileUtils.class);
     @Autowired
     private AppConfig appConfig;
+    @Autowired
+    private ImageUtils imageUtils;
 
     public FileUploadDto uploadFile2Local(MultipartFile file, FileUploadEnum typeEnum) {
         try {
@@ -53,12 +55,12 @@ public class FileUtils {
             if(typeEnum.equals(FileUploadEnum.COMMENT_IMAGE)){
                 String thumbFileName = fileName.replace(".", "_.");
                 File thumbFile = new File(targetFolder, thumbFileName);
-                Boolean isSuccess = ImageUtils.createThumbnail(targetFile, Constans.LENGTH_200, Constans.LENGTH_200, thumbFile);
+                Boolean isSuccess = imageUtils.createThumbnail(targetFile, Constans.LENGTH_200, Constans.LENGTH_200, thumbFile);
                 if(!isSuccess){
                     org.apache.commons.io.FileUtils.copyFile(targetFile, thumbFile);
                 }
             } else if(typeEnum.equals(FileUploadEnum.AVATAR) || typeEnum.equals(FileUploadEnum.ARTICLE_COVER)){
-                ImageUtils.createThumbnail(targetFile, Constans.LENGTH_200, Constans.LENGTH_200, targetFile);
+                imageUtils.createThumbnail(targetFile, Constans.LENGTH_200, Constans.LENGTH_200, targetFile);
             }
             return uploadDto;
         }catch(BusinessException e){

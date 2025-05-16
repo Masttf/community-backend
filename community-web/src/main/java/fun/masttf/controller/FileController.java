@@ -3,7 +3,6 @@ package fun.masttf.controller;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Date;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -22,12 +21,10 @@ import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.FileUploadDto;
 import fun.masttf.entity.dto.SessionWebUserDto;
-import fun.masttf.entity.enums.DateTimePatternEnum;
 import fun.masttf.entity.enums.FileUploadEnum;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
-import fun.masttf.utils.DateUtils;
 import fun.masttf.utils.StringTools;
 
 @RestController
@@ -36,6 +33,8 @@ public class FileController extends ABaseController {
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(FileController.class);
     @Autowired
     private WebConfig webConfig;
+
+    //上传临时图片
     @RequestMapping("uploadImage")
     public ResponseVo<Object> uploadImage(MultipartFile file) {
         if (file == null) {
@@ -48,12 +47,10 @@ public class FileController extends ABaseController {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         String fileRealName = StringTools.getRandomString(Constans.LENGTH_30) + "." + suffix;
-        String dateStr = DateUtils.format(new Date(), DateTimePatternEnum.YYYY_MM.getPattern());
-        String fileFolder = FileUploadEnum.COMMENT_IMAGE.getFolder() + dateStr + "/";
-        copyFile(file, fileFolder, fileRealName);
+        copyFile(file, FileUploadEnum.TEMP.getFolder(), fileRealName);
         FileUploadDto imageVo = new FileUploadDto();
         imageVo.setOriginalFileName(fileName);
-        imageVo.setLocalPath(fileFolder + fileRealName);
+        imageVo.setLocalPath(FileUploadEnum.TEMP.getFolder() + fileRealName);
         return getSuccessResponseVo(imageVo);
     }
 

@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
-import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -202,6 +201,7 @@ public class ForumArticleController extends ABaseController {
         return getSuccessResponseVo(forumBoardService.getBoardTree(postType));
     }
 
+    //待测试
     @RequestMapping("/postArticle")
     @GlobalInterceptor(checkLogin = true, checkParams = true)
     public ResponseVo<Object> postArticle(

@@ -1,13 +1,32 @@
 package fun.masttf.utils;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import fun.masttf.config.AppConfig;
+import fun.masttf.entity.constans.Constans;
+import fun.masttf.entity.enums.DateTimePatternEnum;
+import fun.masttf.entity.enums.FileUploadEnum;
+
+@Component
 public class ImageUtils {
-    public static Boolean createThumbnail(File file, int thumbnailWidth, int thumbnailHeight, File tarFile) {
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(ImageUtils.class);
+    @Autowired
+    private AppConfig appConfig;
+    public Boolean createThumbnail(File file, int thumbnailWidth, int thumbnailHeight, File tarFile) {
         try{
             BufferedImage src = ImageIO.read(file);
             // thumbnailWidth缩略图的宽度，height高度
@@ -43,5 +62,48 @@ public class ImageUtils {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public String resetImageHtml(String html) {
+        String month = DateUtils.format(new Date(), DateTimePatternEnum.YYYY_MM.getPattern());
+        List<String> imaList = getImageList(html);
+        for(String img : imaList) {
+            resetImage(img, month);
+        }
+        return month;
+    }
+    
+    private String resetImage(String imagePath, String month){
+        if(StringTools.isEmpty(imagePath) || !imagePath.startsWith(Constans.READ_IMAGE_PATH + FileUploadEnum.TEMP.getFolder())) {
+            return imagePath;
+        }
+        // /api/file/getImage/temp/dsafasfas.jpg -> 202303/dsafasfas.jpg
+        imagePath = imagePath.replace(Constans.READ_IMAGE_PATH, "");
+        String imageFileName = month + "/" + imagePath.substring(imagePath.lastIndexOf("/") + 1);
+        File targetFile = new File(appConfig.getProjectFolder() + Constans.FILE_FOLDER_FILE + FileUploadEnum.COMMENT_IMAGE.getFolder() + imageFileName);
+        try {
+            File tempFile = new File(appConfig.getProjectFolder() + imagePath);
+            org.apache.commons.io.FileUtils.copyFile(tempFile, targetFile);
+            tempFile.delete();
+        } catch(IOException e) {
+            logger.error("复制图片失败", e);
+            return imagePath;
+        }
+        return imageFileName;
+    }
+    public List<String> getImageList(String html) {
+        List<String> list = new ArrayList<>();
+        String regEx = "<img.*src\\s*=\\s*(.*?)[^>]*?>";
+        Pattern p = Pattern.compile(regEx, Pattern.CASE_INSENSITIVE);
+        Matcher m = p.matcher(html);
+        while (m.find()) {
+            String img = m.group();
+            Matcher m2 = Pattern.compile("src\\s*=\\s*\"?(.*?)(\"|>|\\s+)").matcher(img);
+            while(m2.find()) {
+                String src = m2.group(1);
+                list.add(src);
+            }
+        }
+        return list;
     }
 }
