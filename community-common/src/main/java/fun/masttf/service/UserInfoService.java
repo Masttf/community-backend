@@ -94,7 +94,7 @@ public interface UserInfoService {
 
 	void updateUserIntegral(String userId, UserIntegralOperTypeEnum operTypeEnum, Integer changeType, Integer integral);
 
-	SessionWebUserDto login(String email, String password, String ip, String province);
+	SessionWebUserDto login(String email, String password, String ip);
 
 	void resetPwd(String email, String emailCode, String password);
 }

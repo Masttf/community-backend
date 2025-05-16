@@ -2,6 +2,7 @@ package fun.masttf.service.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,8 @@ import fun.masttf.entity.query.UserIntegralRecordQuery;
 import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.service.EmailCodeService;
 import fun.masttf.service.UserInfoService;
+import fun.masttf.utils.JsonUtils;
+import fun.masttf.utils.OKHttpUtils;
 import fun.masttf.utils.StringTools;
 import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.UserInfoMapper;
@@ -41,6 +44,8 @@ import fun.masttf.entity.enums.UserStatusEnum;
  */
 @Service("userInfoService")
 public class UserInfoServiceImpl implements UserInfoService {
+	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserInfoServiceImpl.class);
+
 	@Autowired
 	private EmailCodeService emailCodeService;
 
@@ -250,9 +255,23 @@ public class UserInfoServiceImpl implements UserInfoService {
 			throw new BusinessException("更新用户积分失败");
 		}
 	}
+	public String getIpProvince(String ip) {
+		try {
+			String url = "http://whois.pconline.com.cn/ipJson.jsp?json=true&ip=" + ip;
+			String responseJson = OKHttpUtils.getRequest(url);
+			if(responseJson == null) {
+				return Constans.NO_ADDRESS;
+			}
+			Map<String, String> addressInfo = JsonUtils.convertJson2Obj(responseJson, Map.class);
+			return addressInfo.get("pro");
+		} catch (Exception e) {
+			logger.error("获取ip地址失败", e);
+		}
+		return Constans.NO_ADDRESS;
+	}
 
 	@Override
-	public SessionWebUserDto login(String email, String password, String ip, String province) {
+	public SessionWebUserDto login(String email, String password, String ip) {
 		UserInfo userInfo = userInfoMapper.selectByEmail(email);
 		// logger.info(userInfo.toString());
 		if(userInfo == null || !userInfo.getPassword().equals(password)){
@@ -264,11 +283,11 @@ public class UserInfoServiceImpl implements UserInfoService {
 		UserInfo updateInfo = new UserInfo();
 		updateInfo.setLastLoginTime(new Date());
 		updateInfo.setLastLoginIp(ip);
-		updateInfo.setLastLoginIpAddress(province);
+		updateInfo.setLastLoginIpAddress(getIpProvince(ip));
 		userInfoMapper.updateByUserId(updateInfo, userInfo.getUserId());
 		SessionWebUserDto sessionWebUserDto = new SessionWebUserDto();
 		sessionWebUserDto.setNickName(userInfo.getNickName());
-		sessionWebUserDto.setProvice(province);
+		sessionWebUserDto.setProvice(getIpProvince(ip));
 		sessionWebUserDto.setUserId(userInfo.getUserId());
 		if(!StringTools.isEmpty(webConfig.getAdminEmails()) && ArrayUtils.contains(webConfig.getAdminEmails().split(","), email)){
 			sessionWebUserDto.setIsAdmin(true);
@@ -291,4 +310,5 @@ public class UserInfoServiceImpl implements UserInfoService {
 		bean.setPassword(StringTools.encodeMd5(password));
 		userInfoMapper.updateByEmail(bean, emailCode);
 	}
+
 }

@@ -115,9 +115,7 @@ public class AccountController extends ABaseController {
             if (code == null || !code.equals(checkCode)) {
                 throw new BusinessException("图片验证码错误");
             }
-            String ip = getIpAddr(request);
-            String province = getIpProvince(ip);
-            SessionWebUserDto sessionWebUserDto = userInfoService.login(email, password, ip, province);
+            SessionWebUserDto sessionWebUserDto = userInfoService.login(email, password, getIpAddr(request));
             session.setAttribute(Constans.SESSION_KEY, sessionWebUserDto);
             return getSuccessResponseVo(sessionWebUserDto);
         } finally {
