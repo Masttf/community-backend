@@ -16,7 +16,7 @@ public enum ArticleOrderTypeEnum {
         }
         return null;
     }
-    ArticleOrderTypeEnum(Integer type, String oderSql, String desc) {
+    private ArticleOrderTypeEnum(Integer type, String oderSql, String desc) {
         this.type = type;
         this.oderSql = oderSql;
         this.desc = desc;

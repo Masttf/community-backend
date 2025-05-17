@@ -8,7 +8,7 @@ public enum UserStatusEnum {
     private Integer status;
     private String msg;
 
-    UserStatusEnum(Integer status, String msg) {
+    private UserStatusEnum(Integer status, String msg) {
         this.status = status;
         this.msg = msg;
     }

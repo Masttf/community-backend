@@ -12,7 +12,7 @@ public enum ResponseCodeEnum {
     private Integer code;
     private String message;
 
-    ResponseCodeEnum(Integer code, String message) {
+    private ResponseCodeEnum(Integer code, String message) {
         this.code = code;
         this.message = message;
     }

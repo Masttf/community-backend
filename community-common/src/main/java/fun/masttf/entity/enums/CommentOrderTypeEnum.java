@@ -15,7 +15,7 @@ public enum CommentOrderTypeEnum {
         }
         return null;
     }
-    CommentOrderTypeEnum(Integer type, String oderSql, String desc) {
+    private CommentOrderTypeEnum(Integer type, String oderSql, String desc) {
         this.type = type;
         this.oderSql = oderSql;
         this.desc = desc;

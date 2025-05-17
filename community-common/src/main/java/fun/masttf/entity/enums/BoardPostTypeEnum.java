@@ -5,7 +5,7 @@ public enum BoardPostTypeEnum {
     POST(1, "任何人可以发帖");
     private Integer type;
     private String desc;
-    BoardPostTypeEnum(Integer type, String desc) {
+    private BoardPostTypeEnum(Integer type, String desc) {
         this.type = type;
         this.desc = desc;
     }

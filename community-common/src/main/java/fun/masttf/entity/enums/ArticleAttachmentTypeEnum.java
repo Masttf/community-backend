@@ -5,7 +5,7 @@ public enum ArticleAttachmentTypeEnum {
     HAVE_ATTACHMENT(1, "有附件");
     private Integer type;
     private String desc;
-    ArticleAttachmentTypeEnum(Integer type, String desc) {
+    private ArticleAttachmentTypeEnum(Integer type, String desc) {
         this.type = type;
         this.desc = desc;
     }

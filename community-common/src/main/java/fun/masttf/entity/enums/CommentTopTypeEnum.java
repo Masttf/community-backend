@@ -6,7 +6,7 @@ public enum CommentTopTypeEnum {
     private Integer type;
     private String desc;
 
-    CommentTopTypeEnum(Integer type, String desc) {
+    private CommentTopTypeEnum(Integer type, String desc) {
         this.type = type;
         this.desc = desc;
     }

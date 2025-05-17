@@ -12,7 +12,7 @@ public enum AttachmentFileTypeEnum {
     private String desc;
     private String[] suffix;
 
-    AttachmentFileTypeEnum(Integer type, String desc, String[] suffix) {
+    private AttachmentFileTypeEnum(Integer type, String desc, String[] suffix) {
         this.type = type;
         this.desc = desc;
         this.suffix = suffix;

@@ -16,7 +16,7 @@ public enum FileUploadEnum {
     private String desc;
     private String[] suffix;
 
-    FileUploadEnum(String folder, String desc, String[] suffix) {
+    private FileUploadEnum(String folder, String desc, String[] suffix) {
         this.folder = folder;
         this.desc = desc;
         this.suffix = suffix;

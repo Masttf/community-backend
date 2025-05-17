@@ -6,7 +6,7 @@ public enum ArticleEditorTypeEnum {
     private Integer type;
     private String desc;
 
-    ArticleEditorTypeEnum(Integer type, String desc) {
+    private ArticleEditorTypeEnum(Integer type, String desc) {
         this.type = type;
         this.desc = desc;
     }

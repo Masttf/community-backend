@@ -6,7 +6,7 @@ public enum DateTimePatternEnum {
     YYYY_MM("yyyyMM");
     private String pattern;
 
-    DateTimePatternEnum(String pattern) {
+    private DateTimePatternEnum(String pattern) {
         this.pattern = pattern;
     }
 

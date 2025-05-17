@@ -13,7 +13,7 @@ public enum VerifyRegexEnum {
     MONEY("^[0-9]+(.[0-9]{1,2})?$", "金额(最多两位小数)");
     private String regex;
     private String desc;
-    VerifyRegexEnum(String regex, String desc) {
+    private VerifyRegexEnum(String regex, String desc) {
         this.regex = regex;
         this.desc = desc;
     }
