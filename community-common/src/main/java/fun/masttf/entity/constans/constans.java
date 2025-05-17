@@ -15,6 +15,8 @@ public class Constans {
     public static final String FILE_FOLDER_FILE = "/file/";
     public static final String FILE_FOLDER_ATTACHMENT = "attachment/";
     public static final String FILE_FOLDER_TEMP = "temp/";
+    public static final String FILE_FOLDER_AVATAR = "avatar/";
+    public static final String FILE_FOLDER_IMAGES = "images/";
     public static final String AVATAR_SUFFIX = ".webp";
     public static final String AVATAR_DEFAULT = "default.webp";
     public static final String[] IMAGE_SUFFIX = new String[] { "jpg" ,"jpeg", "png", "gif", "bmp", "webp" };

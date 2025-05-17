@@ -209,7 +209,7 @@ public class ForumArticleController extends ABaseController {
         return getSuccessResponseVo(forumBoardService.getBoardTree(postType));
     }
 
-    //待测试
+
     @RequestMapping("/postArticle")
     @GlobalInterceptor(checkLogin = true, checkParams = true)
     public ResponseVo<Object> postArticle(

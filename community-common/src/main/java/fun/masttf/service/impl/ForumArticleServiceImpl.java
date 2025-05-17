@@ -239,7 +239,7 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 		if(dbAttachment != null && article.getAttachmentType().equals(ArticleAttachmentTypeEnum.NO_ATTACHMENT.getType())) {
 			article.setAttachmentType(ArticleAttachmentTypeEnum.NO_ATTACHMENT.getType());
 			//删除旧附件
-			fileUtils.deleteFile(dbAttachment.getFilePath());
+			fileUtils.deleteFile(Constans.FILE_FOLDER_ATTACHMENT + dbAttachment.getFilePath());
 			//删除数据库记录
 			forumArticleAttachmentMapper.deleteByFileId(dbAttachment.getFileId());
 		}

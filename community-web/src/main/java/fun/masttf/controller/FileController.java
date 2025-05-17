@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -16,11 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import fun.masttf.annotation.GlobalInterceptor;
 import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.FileUploadDto;
-import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.FileUploadEnum;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 import fun.masttf.entity.vo.ResponseVo;
@@ -35,6 +32,7 @@ public class FileController extends ABaseController {
     private WebConfig webConfig;
 
     //上传临时图片
+    //放在images/temp
     @RequestMapping("uploadImage")
     public ResponseVo<Object> uploadImage(MultipartFile file) {
         if (file == null) {
@@ -51,26 +49,6 @@ public class FileController extends ABaseController {
         FileUploadDto imageVo = new FileUploadDto();
         imageVo.setOriginalFileName(fileName);
         imageVo.setLocalPath(FileUploadEnum.TEMP.getFolder() + fileRealName);
-        return getSuccessResponseVo(imageVo);
-    }
-
-    @RequestMapping("uploadAvatar")
-    @GlobalInterceptor(checkLogin = true)
-    public ResponseVo<Object> uploadAvatar(HttpSession session ,MultipartFile file) {
-        if (file == null) {
-            throw new BusinessException(ResponseCodeEnum.CODE_600);
-        }
-        SessionWebUserDto userDto = getUserInfoSession(session);
-        String fileName = file.getOriginalFilename();
-        String suffix = StringTools.getFileSuffix(fileName);
-        if(!ArrayUtils.contains(Constans.IMAGE_SUFFIX, suffix)) {
-            throw new BusinessException(ResponseCodeEnum.CODE_600);
-        }
-        String fileRealName = userDto.getUserId() + Constans.AVATAR_SUFFIX;
-        copyFile(file, FileUploadEnum.AVATAR.getFolder(), fileRealName);
-        FileUploadDto imageVo = new FileUploadDto();
-        imageVo.setOriginalFileName(fileName);
-        imageVo.setLocalPath(FileUploadEnum.AVATAR.getFolder() + fileRealName);
         return getSuccessResponseVo(imageVo);
     }
 
@@ -97,9 +75,10 @@ public class FileController extends ABaseController {
         }
         readImage(response, FileUploadEnum.AVATAR.getFolder(), imageName);
     }
+    //放在images/{imageFolder}
     private void copyFile(MultipartFile file, String imageFolder, String fileRealName) {
         try {
-            String folderPath = webConfig.getProjectFolder() + Constans.FILE_FOLDER_FILE + imageFolder;
+            String folderPath = webConfig.getProjectFolder() + Constans.FILE_FOLDER_FILE + Constans.FILE_FOLDER_IMAGES + imageFolder;
             File folder = new File(folderPath);
             if (!folder.exists()) {
                 folder.mkdirs();

@@ -1,12 +1,12 @@
 package fun.masttf.entity.enums;
 
 public enum AttachmentFileTypeEnum {
-    ZIP(0, "压缩文件", new String[]{".zip", ".rar", ".7z", ".tar", ".gz"}),
-    DOC(1, "Word文档", new String[]{".doc", ".docx"}),
-    XLS(2, "Excel文档", new String[]{".xls", ".xlsx"}),
-    PPT(3, "PPT文档", new String[]{".ppt", ".pptx"}),
-    TXT(4, "文本文件", new String[]{".txt"}),
-    PDF(5, "PDF文件", new String[]{".pdf"});
+    ZIP(0, "压缩文件", new String[]{"zip", "rar", "7z", "tar", "gz"}),
+    DOC(1, "Word文档", new String[]{"doc", "docx"}),
+    XLS(2, "Excel文档", new String[]{"xls", "xlsx"}),
+    PPT(3, "PPT文档", new String[]{"ppt", "pptx"}),
+    TXT(4, "文本文件", new String[]{"txt"}),
+    PDF(5, "PDF文件", new String[]{"pdf"});
 
     private Integer type;
     private String desc;

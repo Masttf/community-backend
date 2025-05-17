@@ -6,11 +6,11 @@ import fun.masttf.entity.constans.Constans;
 
 public enum FileUploadEnum {
     
-    ARTICLE_ATTACHMENT("attachment/", "文章附件", Constans.ATTACHMENT_SUFFIX),
-    ARTICLE_COVER("cover/", "文章封面", Constans.IMAGE_SUFFIX),
-    AVATAR("avatar/", "头像", Constans.IMAGE_SUFFIX),
-    TEMP("temp/", "临时文件", Constans.IMAGE_SUFFIX),
-    COMMENT_IMAGE("images/", "图片", Constans.IMAGE_SUFFIX);
+    ARTICLE_ATTACHMENT(Constans.FILE_FOLDER_ATTACHMENT, "文章附件", Constans.ATTACHMENT_SUFFIX),
+    ARTICLE_COVER(Constans.FILE_FOLDER_IMAGES, "文章封面", Constans.IMAGE_SUFFIX),
+    AVATAR(Constans.FILE_FOLDER_AVATAR, "头像", Constans.IMAGE_SUFFIX),
+    TEMP(Constans.FILE_FOLDER_TEMP, "临时文件", Constans.IMAGE_SUFFIX),
+    COMMENT_IMAGE(Constans.FILE_FOLDER_IMAGES, "图片", Constans.IMAGE_SUFFIX);
     
     private String folder;
     private String desc;

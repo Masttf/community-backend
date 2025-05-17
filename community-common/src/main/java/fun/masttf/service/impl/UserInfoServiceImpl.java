@@ -307,8 +307,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 	@Transactional(rollbackFor = Exception.class)
 	public void resetPwd(String email, String emailCode, String password) {
 		UserInfo userInfo = userInfoMapper.selectByEmail(email);
-		if (userInfo != null) {
-			throw new BusinessException("邮箱已存在");
+		if (userInfo == null) {
+			throw new BusinessException("邮箱不存在");
 		}
 		emailCodeService.checkCode(email, emailCode);
 		UserInfo bean = new UserInfo();
