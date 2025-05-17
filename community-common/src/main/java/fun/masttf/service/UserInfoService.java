@@ -1,6 +1,9 @@
 package fun.masttf.service;
 
 import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.UserIntegralOperTypeEnum;
@@ -97,4 +100,6 @@ public interface UserInfoService {
 	SessionWebUserDto login(String email, String password, String ip);
 
 	void resetPwd(String email, String emailCode, String password);
+
+	void updateUserInfo(UserInfo userInfo, MultipartFile avatar);
 }

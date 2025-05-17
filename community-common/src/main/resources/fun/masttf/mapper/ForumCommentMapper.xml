@@ -123,7 +123,7 @@
 			and (status = 1 or (status = 0 and user_id = #{query.currentUserId}))
 		</if>
 		<if test="query.pCommentIdList != null and query.pCommentIdList.size() > 0">
-			and p_comment_id in
+			and p_comment_id exists
 			<foreach collection="query.pCommentIdList" item="item" separator="," open="(" close=")">
 				#{item}
 			</foreach>

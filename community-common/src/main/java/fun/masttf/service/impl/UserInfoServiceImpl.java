@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
@@ -18,6 +19,7 @@ import fun.masttf.entity.query.UserIntegralRecordQuery;
 import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.service.EmailCodeService;
 import fun.masttf.service.UserInfoService;
+import fun.masttf.utils.FileUtils;
 import fun.masttf.utils.JsonUtils;
 import fun.masttf.utils.OKHttpUtils;
 import fun.masttf.utils.StringTools;
@@ -29,6 +31,7 @@ import fun.masttf.entity.query.SimplePage;
 import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
+import fun.masttf.entity.enums.FileUploadEnum;
 import fun.masttf.entity.enums.MessageStatusEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
@@ -59,6 +62,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 	private UserIntegralRecordMapper<UserIntegralRecord, UserIntegralRecordQuery> userIntegralRecordMapper;
 	@Autowired
 	private WebConfig webConfig;
+	@Autowired
+	private FileUtils fileUtils;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -311,4 +316,11 @@ public class UserInfoServiceImpl implements UserInfoService {
 		userInfoMapper.updateByEmail(bean, emailCode);
 	}
 
+	@Override
+	public void updateUserInfo(UserInfo userInfo, MultipartFile avatar){
+		userInfoMapper.updateByUserId(userInfo, userInfo.getUserId());
+		if(avatar != null && !avatar.isEmpty()){
+			fileUtils.uploadFile2Local(avatar, FileUploadEnum.AVATAR, userInfo.getUserId());
+		}
+	}
 }

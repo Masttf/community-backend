@@ -163,11 +163,11 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 		article.setArticleId(articleId);
 		article.setPostTime(curDate);
 		article.setLastUpdateTime(curDate);
-		if(cover != null) {
-			FileUploadDto coverDto = fileUtils.uploadFile2Local(cover, FileUploadEnum.ARTICLE_COVER);
+		if(cover != null && !cover.isEmpty()) {
+			FileUploadDto coverDto = fileUtils.uploadFile2Local(cover, FileUploadEnum.ARTICLE_COVER, null);
 			article.setCover(coverDto.getLocalPath());
 		}
-		if(attachment != null) {
+		if(attachment != null && !attachment.isEmpty()) {
 			updateAttachment(article, articleAttachment, attachment, false);
 			article.setAttachmentType(ArticleAttachmentTypeEnum.HAVE_ATTACHMENT.getType());
 		}else{
@@ -212,11 +212,11 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 		resetBoardInfo(isAdmin, article);
 		Date curDate = new Date();
 		article.setLastUpdateTime(curDate);
-		if(cover != null) {
+		if(cover != null && !cover.isEmpty()) {
 			//删除旧封面
 			fileUtils.deleteFile(oldArticle.getCover());
 			//上传新封面
-			FileUploadDto coverDto = fileUtils.uploadFile2Local(cover, FileUploadEnum.ARTICLE_COVER);
+			FileUploadDto coverDto = fileUtils.uploadFile2Local(cover, FileUploadEnum.ARTICLE_COVER,null);
 			article.setCover(coverDto.getLocalPath());
 		}
 		/*
@@ -306,7 +306,7 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 			}
 		}
 		//fileUtils.uploadFile2Local这里已经处理了文件格式
-		FileUploadDto attachmentDto = fileUtils.uploadFile2Local(attachment, FileUploadEnum.ARTICLE_ATTACHMENT);
+		FileUploadDto attachmentDto = fileUtils.uploadFile2Local(attachment, FileUploadEnum.ARTICLE_ATTACHMENT, null);
 		if(oldAttachment == null) {
 			String originalFileName = attachment.getOriginalFilename();
 			String fileSuffix = StringTools.getFileSuffix(originalFileName);

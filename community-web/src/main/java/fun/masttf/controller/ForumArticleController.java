@@ -74,7 +74,8 @@ public class ForumArticleController extends ABaseController {
     private ForumBoardService forumBoardService;
     
     @RequestMapping("/loadArticle")
-    public ResponseVo<Object> loadArticle(HttpSession session, Integer boardId, Integer pBoardId, Integer orderType, Integer pageNo) {
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVo<Object> loadArticle(HttpSession session, Integer boardId, Integer pBoardId, Integer orderType,@VerifyParam(required = true) Integer pageNo) {
         
         ForumArticleQuery articleQuery = new ForumArticleQuery();
         articleQuery.setBoardId((boardId == null || boardId == 0) ? null : boardId);

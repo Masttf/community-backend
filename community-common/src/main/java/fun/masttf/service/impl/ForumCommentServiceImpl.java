@@ -211,7 +211,7 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 			comment.setReplyNickName(user.getNickName());
 		}
 		if(image != null) {
-			FileUploadDto uploadDto = fileUtils.uploadFile2Local(image, FileUploadEnum.COMMENT_IMAGE);
+			FileUploadDto uploadDto = fileUtils.uploadFile2Local(image, FileUploadEnum.COMMENT_IMAGE, null);
 			comment.setImgPath(uploadDto.getLocalPath());
 		}
 		Boolean needAudit = SysCacheUtils.getSysSetting().getAuditSetting().getCommentAudit();

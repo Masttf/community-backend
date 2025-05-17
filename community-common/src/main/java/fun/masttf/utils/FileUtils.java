@@ -24,7 +24,7 @@ public class FileUtils {
     @Autowired
     private ImageUtils imageUtils;
 
-    public FileUploadDto uploadFile2Local(MultipartFile file, FileUploadEnum typeEnum) {
+    public FileUploadDto uploadFile2Local(MultipartFile file, FileUploadEnum typeEnum, String userId) {
         try {
             FileUploadDto uploadDto = new FileUploadDto();
             String originalFileName = file.getOriginalFilename();
@@ -32,16 +32,24 @@ public class FileUtils {
             if(!ArrayUtils.contains(typeEnum.getSuffix(), fileSuffix)){
                 throw new BusinessException("文件格式不正确");
             }
-            String month = DateUtils.format(new Date(), DateTimePatternEnum.YYYY_MM.getPattern());
+
             String baseFolder = appConfig.getProjectFolder() + Constans.FILE_FOLDER_FILE;
-            String rd = StringTools.getRandomString(Constans.LENGTH_30);
-            String fileName = rd + "." + fileSuffix;
-            File targetFolder = new File(baseFolder + typeEnum.getFolder() + month + "/");
-            
-            String localPath = typeEnum.getFolder() + month + "/" + fileName;
+            String fileName = null;
+            String localPath = null;
+            File targetFolder = null;
             if(typeEnum.equals(FileUploadEnum.AVATAR)){
+                if(StringTools.isEmpty(userId)){
+                    logger.error("用户ID不能为空");
+                    throw new BusinessException("用户ID不能为空");
+                }
+                fileName = userId + "." + Constans.AVATAR_SUFFIX;
                 targetFolder = new File(baseFolder + typeEnum.getFolder());
                 localPath = typeEnum.getFolder() + fileName;
+            }else{
+                String month = DateUtils.format(new Date(), DateTimePatternEnum.YYYY_MM.getPattern());
+                fileName = StringTools.getRandomString(Constans.LENGTH_30) + "." + fileSuffix;
+                targetFolder = new File(baseFolder + typeEnum.getFolder() + month + "/");
+                localPath = typeEnum.getFolder() + month + "/" + fileName;
             }
             if(!targetFolder.exists()){
                 targetFolder.mkdirs();

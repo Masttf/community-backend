@@ -48,43 +48,10 @@ public class ForumArticleQuery extends BaseQuery {
 
 	private String userIdFuzzy;
 
-	private String currentUserId;
 	/**
 	 * 昵称
 	 */
 	private String nickName;
-
-	public Integer getpBoardId() {
-		return pBoardId;
-	}
-
-	public void setpBoardId(Integer pBoardId) {
-		this.pBoardId = pBoardId;
-	}
-
-	public String getpBoardName() {
-		return pBoardName;
-	}
-
-	public void setpBoardName(String pBoardName) {
-		this.pBoardName = pBoardName;
-	}
-
-	public String getpBoardNameFuzzy() {
-		return pBoardNameFuzzy;
-	}
-
-	public void setpBoardNameFuzzy(String pBoardNameFuzzy) {
-		this.pBoardNameFuzzy = pBoardNameFuzzy;
-	}
-
-	public String getCurrentUserId() {
-		return currentUserId;
-	}
-
-	public void setCurrentUserId(String currentUserId) {
-		this.currentUserId = currentUserId;
-	}
 
 	private String nickNameFuzzy;
 
@@ -183,7 +150,32 @@ public class ForumArticleQuery extends BaseQuery {
 	 */
 	private Integer status;
 
-	public String getArticleId() {
+	private String currentUserId;
+
+	private String commentUserId;
+
+	private String likeUserId;
+
+	
+	
+
+	public String getCommentUserId() {
+        return commentUserId;
+    }
+
+    public void setCommentUserId(String commentUserId) {
+        this.commentUserId = commentUserId;
+    }
+
+    public String getLikeUserId() {
+        return likeUserId;
+    }
+
+    public void setLikeUserId(String likeUserId) {
+        this.likeUserId = likeUserId;
+    }
+
+    public String getArticleId() {
 		return this.articleId;
 	}
 
@@ -457,5 +449,35 @@ public class ForumArticleQuery extends BaseQuery {
 		this.lastUpdateTimeEnd = lastUpdateTimeEnd;
 	}
 
+	public Integer getpBoardId() {
+		return pBoardId;
+	}
 
+	public void setpBoardId(Integer pBoardId) {
+		this.pBoardId = pBoardId;
+	}
+
+	public String getpBoardName() {
+		return pBoardName;
+	}
+
+	public void setpBoardName(String pBoardName) {
+		this.pBoardName = pBoardName;
+	}
+
+	public String getpBoardNameFuzzy() {
+		return pBoardNameFuzzy;
+	}
+
+	public void setpBoardNameFuzzy(String pBoardNameFuzzy) {
+		this.pBoardNameFuzzy = pBoardNameFuzzy;
+	}
+
+	public String getCurrentUserId() {
+		return currentUserId;
+	}
+
+	public void setCurrentUserId(String currentUserId) {
+		this.currentUserId = currentUserId;
+	}
 }
