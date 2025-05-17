@@ -2,7 +2,6 @@ package fun.masttf.controller;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.tomcat.jni.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,7 +69,7 @@ public class UserCenterController extends ABaseController {
 
     @RequestMapping("/loadUserArticle")
     @GlobalInterceptor(checkParams = true)
-    public ResponseVo<Object> loadUserArticle(HttpSession session,@VerifyParam(required = true) String userId, @VerifyParam(required = true) Integer type, @VerifyParam(required = true) Integer pageNo) {
+    public ResponseVo<Object> loadUserArticle(HttpSession session,@VerifyParam(required = true) String userId, Integer type, Integer pageNo) {
         UserInfo userInfo = userInfoService.getByUserId(userId);
         if(userInfo == null || userInfo.getStatus().equals(UserStatusEnum.DISABLE.getStatus())) {
             throw new BusinessException(ResponseCodeEnum.CODE_404);
@@ -120,7 +119,7 @@ public class UserCenterController extends ABaseController {
 
     @RequestMapping("/loadUserIntegralRecord")
     @GlobalInterceptor(checkLogin = true, checkParams = true)
-    public ResponseVo<Object> loadUserIntegralRecord(HttpSession session, @VerifyParam(required = true) Integer pageNo,
+    public ResponseVo<Object> loadUserIntegralRecord(HttpSession session, Integer pageNo,
             String startTime, String endTime) {
         SessionWebUserDto userDto = getUserInfoSession(session);
         UserIntegralRecordQuery userIntegralRecordQuery = new UserIntegralRecordQuery();

@@ -25,6 +25,7 @@ import fun.masttf.entity.query.SimplePage;
 import fun.masttf.entity.query.UserInfoQuery;
 import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
+import fun.masttf.entity.enums.EmailTypeEnum;
 import fun.masttf.entity.enums.PageSize;
 
 /**
@@ -138,14 +139,19 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void sendEmailCode(String email, Integer type) {
-		if (type == Constans.ZERO) { // 注册
+		String subject = null;
+		if (type == EmailTypeEnum.REGISTER.getType()) { // 注册
 			UserInfo userInfo = userInfoMapper.selectByEmail(email);
 			if (userInfo != null) {
 				throw new BusinessException("邮箱已存在");
 			}
+			subject = "注册邮箱验证码";
+		}else{
+			subject = "找回密码验证码";
 		}
 		String code = StringTools.getRandomString(Constans.LENGTH_5);
-		sendEmailCodeDo(email, code);
+		sendEmailCodeDo(email, code, subject);
+		//把之前的验证码置为失效
 		emailCodeMapper.disableEmailCode(email);
 		EmailCode emailCode = new EmailCode();
 		emailCode.setEmail(email);
@@ -155,14 +161,14 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 		emailCodeMapper.insert(emailCode);
 	}
 
-	private void sendEmailCodeDo(String email, String code) {
+	private void sendEmailCodeDo(String email, String code, String subject) {
 		try {
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
 			helper.setFrom(webConfig.getSendUserName());
 			helper.setTo(email);
-			helper.setSubject("注册邮箱验证码");
+			helper.setSubject(subject);
 			helper.setText("您的验证码是：" + code);
 			helper.setSentDate(new Date());
 			javaMailSender.send(message);
@@ -179,7 +185,7 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 			if (emailCode.getStatus() == 1
 					|| emailCode.getCreateTime().getTime() + Constans.LENGTH_10 * 60 * 1000 < System
 							.currentTimeMillis()) {
-				throw new BusinessException("验证码已失效");
+				throw new BusinessException("邮箱验证码已失效");
 			}
 		} else {
 			throw new BusinessException("邮箱验证码不匹配");

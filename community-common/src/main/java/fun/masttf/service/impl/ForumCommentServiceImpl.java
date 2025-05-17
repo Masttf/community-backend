@@ -182,6 +182,7 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 			return ;
 		}
 		if(topTypeEnum.equals(CommentTopTypeEnum.TOP)){
+			// 取消其他评论的置顶
 			forumCommentMapper.updateTopTypeByArticleId(article.getArticleId());
 		}
 		ForumComment updateComment = new ForumComment();

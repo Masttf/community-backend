@@ -75,7 +75,7 @@ public class ForumArticleController extends ABaseController {
     
     @RequestMapping("/loadArticle")
     @GlobalInterceptor(checkParams = true)
-    public ResponseVo<Object> loadArticle(HttpSession session, Integer boardId, Integer pBoardId, Integer orderType,@VerifyParam(required = true) Integer pageNo) {
+    public ResponseVo<Object> loadArticle(HttpSession session, Integer boardId, Integer pBoardId, Integer orderType, Integer pageNo) {
         
         ForumArticleQuery articleQuery = new ForumArticleQuery();
         articleQuery.setBoardId((boardId == null || boardId == 0) ? null : boardId);
@@ -99,8 +99,12 @@ public class ForumArticleController extends ABaseController {
     public ResponseVo<Object> getArticleDetail(HttpSession session,@VerifyParam(required = true) String articleId) {
         SessionWebUserDto userDto = getUserInfoSession(session);
         ForumArticle article = forumArticleService.readArticle(articleId);
-        Boolean canShowNoAudit = (userDto == null || !article.getUserId().equals(userDto.getUserId()));
-        if(article == null || article.getStatus() == ArticleStatusEnum.DEL.getStatus() || (article.getStatus() == ArticleStatusEnum.NO_AUDIT.getStatus() && !canShowNoAudit)) {
+        if(article == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_404);
+        }
+        //先判断空避免空指针
+        Boolean canShowNoAudit = (userDto != null && article.getUserId().equals(userDto.getUserId()));
+        if(article.getStatus() == ArticleStatusEnum.DEL.getStatus() || (article.getStatus() == ArticleStatusEnum.NO_AUDIT.getStatus() && !canShowNoAudit)) {
             throw new BusinessException(ResponseCodeEnum.CODE_404);
         }
         ForumArticleDetailVo detailVo = new ForumArticleDetailVo();

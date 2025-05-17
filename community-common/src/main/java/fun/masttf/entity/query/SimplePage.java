@@ -15,7 +15,7 @@ public class SimplePage {
 
     public SimplePage(Integer pageNo, Integer countTotal, Integer pageSize) {
         if (null == pageNo) {
-            pageNo = 0;
+            pageNo = 1;
         }
         this.pageNo = pageNo;
         this.countTotal = countTotal;

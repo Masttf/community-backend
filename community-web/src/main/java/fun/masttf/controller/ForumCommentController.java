@@ -3,7 +3,6 @@ package fun.masttf.controller;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,6 +118,7 @@ public class ForumCommentController extends ABaseController {
         comment.setUserIpAddress(userDto.getProvice());
         comment.setTopType(CommentTopTypeEnum.NOT_TOP.getType());
         forumCommentService.postComment(comment, image);
+        //二级评论返回评论列表
         if(pCommentId != 0){
             ForumCommentQuery commentQuery = new ForumCommentQuery();
             commentQuery.setpCommentId(pCommentId);

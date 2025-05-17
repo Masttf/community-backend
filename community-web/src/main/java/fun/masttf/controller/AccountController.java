@@ -20,6 +20,9 @@ import fun.masttf.entity.dto.CreateImageCode;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.dto.SysSetting4CommentDto;
 import fun.masttf.entity.dto.SysSettingDto;
+import fun.masttf.entity.enums.CheckCodeTypeEnum;
+import fun.masttf.entity.enums.EmailTypeEnum;
+import fun.masttf.entity.enums.ResponseCodeEnum;
 import fun.masttf.entity.enums.VerifyRegexEnum;
 import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
@@ -44,19 +47,19 @@ public class AccountController extends ABaseController {
      * 验证码
      */
     @RequestMapping("/checkCode")
-    public void checkCode(HttpServletResponse response, HttpSession session, Integer type) throws IOException {
+    @GlobalInterceptor(checkParams = true)
+    public void checkCode(HttpServletResponse response, HttpSession session, @VerifyParam(required = true) Integer type) throws IOException {
+        CheckCodeTypeEnum checkCodeTypeEnum = CheckCodeTypeEnum.getByType(type);
+        if (checkCodeTypeEnum == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
         CreateImageCode imageCode = new CreateImageCode(130, 40, 5, 10);
         response.setContentType("image/jpeg");
         response.setHeader("Cache-Control", "no-cache");
         response.setHeader("Pragma", "no-cache");
         response.setDateHeader("Expires", 0);
         String code = imageCode.getCode();
-        // logger.info("验证码:{}", code);
-        if (type == null || type == 0) { // 登入注册
-            session.setAttribute(Constans.CHECK_CODE_KEY, code);
-        } else if (type == 1) { // 获取邮箱
-            session.setAttribute(Constans.CHECK_CODE_KEY_EMAIL, code);
-        }
+        session.setAttribute(checkCodeTypeEnum.getSessionAttribute(), code);
         imageCode.write(response.getOutputStream());
     }
 
@@ -65,17 +68,21 @@ public class AccountController extends ABaseController {
     public ResponseVo<Object> sendEmail(HttpSession session, 
                     @VerifyParam(required = true) String email, 
                     @VerifyParam(required = true) String checkCode, 
-                    @VerifyParam(required = true)Integer type) {
+                    @VerifyParam(required = true) Integer type) {
         try {
-            String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY_EMAIL);
+            String code = (String) session.getAttribute(CheckCodeTypeEnum.EMAIL.getSessionAttribute());
             if (!code.equals(checkCode)) {
                 throw new BusinessException("图片验证码错误");
+            }
+            EmailTypeEnum emailTypeEnum = EmailTypeEnum.getByType(type);
+            if (emailTypeEnum == null) {
+                throw new BusinessException(ResponseCodeEnum.CODE_600);
             }
             emailCodeService.sendEmailCode(email, type);
             return getSuccessResponseVo(null);
         } finally {
             // 清除验证码
-            session.removeAttribute(Constans.CHECK_CODE_KEY_EMAIL);
+            session.removeAttribute(CheckCodeTypeEnum.EMAIL.getSessionAttribute());
         }
     }
 
@@ -99,7 +106,7 @@ public class AccountController extends ABaseController {
             return getSuccessResponseVo(null);
         } finally {
             // 清除验证码
-            session.removeAttribute(Constans.CHECK_CODE_KEY);
+            session.removeAttribute(CheckCodeTypeEnum.COMMON.getSessionAttribute());
         }
     }
 
@@ -111,7 +118,7 @@ public class AccountController extends ABaseController {
             @VerifyParam(required = true) String password, 
             @VerifyParam(required = true) String checkCode) {
         try {
-            String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
+            String code = (String) session.getAttribute(CheckCodeTypeEnum.COMMON.getSessionAttribute());
             if (code == null || !code.equals(checkCode)) {
                 throw new BusinessException("图片验证码错误");
             }
