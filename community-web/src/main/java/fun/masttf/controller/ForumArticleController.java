@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +25,7 @@ import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.ArticleOrderTypeEnum;
+import fun.masttf.entity.enums.ArticleAttachmentTypeEnum;
 import fun.masttf.entity.enums.ArticleEditorTypeEnum;
 import fun.masttf.entity.enums.ArticleStatusEnum;
 import fun.masttf.entity.enums.RecordOpTypeEnum;
@@ -103,12 +106,12 @@ public class ForumArticleController extends ABaseController {
         detailVo.setArticle(CopyTools.copy(article,ForumArticleVo.class));
         
         //附件
-        if(article.getAttachmentType() == Constans.ONE) {
+        if(article.getAttachmentType() == ArticleAttachmentTypeEnum.HAVE_ATTACHMENT.getType()) {
             ForumArticleAttachmentQuery attachmentQuery = new ForumArticleAttachmentQuery();
             attachmentQuery.setArticleId(article.getArticleId());
             List<ForumArticleAttachment> attachmentList = forumArticleAttachmentService.findListByQuery(attachmentQuery);
             if(!attachmentList.isEmpty()){
-                detailVo.setArticleAttachments(CopyTools.copyList(attachmentList, ForumArticleAttachmentVo.class));
+                detailVo.setArticleAttachments(CopyTools.copy(attachmentList.get(0), ForumArticleAttachmentVo.class));
             }
         }
 
@@ -205,7 +208,6 @@ public class ForumArticleController extends ABaseController {
     @RequestMapping("/postArticle")
     @GlobalInterceptor(checkLogin = true, checkParams = true)
     public ResponseVo<Object> postArticle(
-                            HttpServletRequest request,
                             HttpSession session,
                             MultipartFile cover,
                             MultipartFile attachment,
@@ -246,6 +248,85 @@ public class ForumArticleController extends ABaseController {
         articleAttachment.setIntegral(integral == null ? 0 : integral);
 
         forumArticleService.postArticle(userDto.getIsAdmin(),article, articleAttachment, cover, attachment);
-        return getSuccessResponseVo(null);
+        Map<String, String> map = new HashMap<>();
+        map.put("articleId", article.getArticleId());
+        return getSuccessResponseVo(map);
+    }
+
+    @RequestMapping("/articleDetail4Update")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVo<Object> articleDetail4Update(HttpSession session, @VerifyParam(required = true) String articleId) {
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        ForumArticle article = forumArticleService.readArticle(articleId);
+        if(article == null || article.getStatus() == ArticleStatusEnum.DEL.getStatus() || !article.getUserId().equals(userDto.getUserId())) {
+            throw new BusinessException(ResponseCodeEnum.CODE_404);
+        }
+        ForumArticleDetailVo detailVo = new ForumArticleDetailVo();
+        detailVo.setArticle(CopyTools.copy(article,ForumArticleVo.class));
+        //附件
+        if(article.getAttachmentType() == ArticleAttachmentTypeEnum.HAVE_ATTACHMENT.getType()) {
+            ForumArticleAttachmentQuery attachmentQuery = new ForumArticleAttachmentQuery();
+            attachmentQuery.setArticleId(article.getArticleId());
+            List<ForumArticleAttachment> attachmentList = forumArticleAttachmentService.findListByQuery(attachmentQuery);
+            if(!attachmentList.isEmpty()){
+                detailVo.setArticleAttachments(CopyTools.copy(attachmentList.get(0), ForumArticleAttachmentVo.class));
+            }
+        }
+        return getSuccessResponseVo(detailVo);
+    }
+    @RequestMapping("/updateArticle")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVo<Object> updateArticle(
+                            HttpSession session,
+                            MultipartFile cover,
+                            MultipartFile attachment,
+                            Integer integral,
+                            @VerifyParam(required = true) String articleId,
+                            @VerifyParam(required = true, max = 150) String title,
+                            @VerifyParam(required = true) Integer pBoardId,
+                            Integer boardId,
+                            @VerifyParam(max = 200) String summary,
+                            @VerifyParam(required = true) String content,
+                            String markdownContent,
+                            @VerifyParam(required = true) Integer haveAttachment,
+                            @VerifyParam(required = true) Integer editorType) {
+        
+        ArticleEditorTypeEnum editorTypeEnum = ArticleEditorTypeEnum.getByType(editorType);
+        if(editorTypeEnum == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        ArticleAttachmentTypeEnum attachmentTypeEnum = ArticleAttachmentTypeEnum.getByType(haveAttachment);
+        if(attachmentTypeEnum == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        if(ArticleEditorTypeEnum.MARKDOWN.getType().equals(editorType) && StringTools.isEmpty(markdownContent)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        
+        title = StringTools.escapeHtml(title);
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        
+        ForumArticle article = new ForumArticle();
+        article.setArticleId(articleId);
+        article.setTitle(title);
+        article.setpBoardId(pBoardId);
+        article.setBoardId(boardId);
+        article.setSummary(summary);
+        article.setContent(content);
+        article.setMarkdownContent(markdownContent);
+        article.setEditorType(editorType);
+        article.setAttachmentType(haveAttachment);
+
+        article.setUserId(userDto.getUserId());
+        article.setNickName(userDto.getNickName());
+        article.setUserIpAddress(userDto.getProvice());
+
+        ForumArticleAttachment articleAttachment = new ForumArticleAttachment();
+        articleAttachment.setIntegral(integral == null ? 0 : integral);
+
+        forumArticleService.updateArticle(userDto.getIsAdmin(),article, articleAttachment, cover, attachment);
+        Map<String, String> map = new HashMap<>();
+        map.put("articleId", article.getArticleId());
+        return getSuccessResponseVo(map);
     }
 }

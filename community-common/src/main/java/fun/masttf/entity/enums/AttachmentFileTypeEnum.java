@@ -29,8 +29,8 @@ public enum AttachmentFileTypeEnum {
     public static AttachmentFileTypeEnum getBySuffix(String suffix) {
         for (AttachmentFileTypeEnum value : AttachmentFileTypeEnum.values()) {
             for (String s : value.getSuffix()) {
-                //忽略大小写比较
-                if (s.equalsIgnoreCase(suffix)) {
+                //都是小写
+                if (s.equals(suffix)) {
                     return value;
                 }
             }

@@ -38,7 +38,7 @@ public class FileUtils {
             String fileName = rd + "." + fileSuffix;
             File targetFolder = new File(baseFolder + typeEnum.getFolder() + month + "/");
             
-            String localPath = month + "/" + fileName;
+            String localPath = typeEnum.getFolder() + month + "/" + fileName;
             if(typeEnum.equals(FileUploadEnum.AVATAR)){
                 targetFolder = new File(baseFolder + typeEnum.getFolder());
                 localPath = typeEnum.getFolder() + fileName;
@@ -69,6 +69,17 @@ public class FileUtils {
         } catch (Exception e){
             logger.error("上传文件失败", e);
             throw new BusinessException("上传文件失败");
+        }
+    }
+
+    public void deleteFile(String filePath) {
+        if(StringTools.isEmpty(filePath)){
+            return;
+        }
+        String baseFolder = appConfig.getProjectFolder() + Constans.FILE_FOLDER_FILE;
+        File file = new File(baseFolder + filePath);
+        if(file.exists()){
+            file.delete();
         }
     }
 }

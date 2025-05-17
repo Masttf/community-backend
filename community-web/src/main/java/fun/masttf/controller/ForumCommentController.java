@@ -93,7 +93,6 @@ public class ForumCommentController extends ABaseController {
     @RequestMapping("/postComment")
     @GlobalInterceptor(checkLogin = true,checkParams = true)
     public ResponseVo<Object> postComment(
-                    HttpServletRequest request,
                     HttpSession session,
                     @VerifyParam(required = true) String articleId,
                     @VerifyParam(min = 5, max = 800) String content,

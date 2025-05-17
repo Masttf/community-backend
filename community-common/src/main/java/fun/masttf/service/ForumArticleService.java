@@ -65,4 +65,6 @@ public interface ForumArticleService {
 	ForumArticle readArticle(String articleId);
 
 	void postArticle(Boolean isAdmin,ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment);
+
+	void updateArticle(Boolean isAdmin,ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment);
 }

@@ -1,10 +1,8 @@
 package fun.masttf.entity.vo;
 
-import java.util.List;
-
 public class ForumArticleDetailVo {
     private ForumArticleVo article;
-    private List<ForumArticleAttachmentVo> articleAttachments;
+    private ForumArticleAttachmentVo articleAttachments;
     private Boolean haveLike = false;
     public ForumArticleVo getArticle() {
         return article;
@@ -19,12 +17,11 @@ public class ForumArticleDetailVo {
     public void setHaveLike(Boolean haveLike) {
         this.haveLike = haveLike;
     }
-    public List<ForumArticleAttachmentVo> getArticleAttachments() {
+    public ForumArticleAttachmentVo getArticleAttachments() {
         return articleAttachments;
     }
-    public void setArticleAttachments(List<ForumArticleAttachmentVo> articleAttachments) {
+    public void setArticleAttachments(ForumArticleAttachmentVo articleAttachments) {
         this.articleAttachments = articleAttachments;
     }
-
     
 }
