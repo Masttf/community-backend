@@ -104,22 +104,20 @@ public class UserCenterController extends ABaseController {
     @RequestMapping("/updateUserInfo")
     @GlobalInterceptor(checkLogin = true, checkParams = true)
     public ResponseVo<Object> updateUserInfo(HttpSession session,
-            @VerifyParam(required = true) String nickName,
-            @VerifyParam(required = true) Integer Sex,
+            Integer sex,
             @VerifyParam(max = 100) String personDesc,
             MultipartFile avatar){
-        UserSexEnum sexEnum = UserSexEnum.getBySex(Sex);
-        if(sexEnum == null){
-            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        if(sex != null){
+            UserSexEnum sexEnum = UserSexEnum.getBySex(sex);
+            if(sexEnum == null){
+                throw new BusinessException(ResponseCodeEnum.CODE_600);
+            }
         }
         SessionWebUserDto userDto = getUserInfoSession(session);
         UserInfo userInfo = new UserInfo();
         userInfo.setUserId(userDto.getUserId());
         userInfo.setPersonDescription(personDesc);
-        userInfo.setSex(Sex);
-        if(!userDto.getNickName().equals(nickName)){
-            userInfo.setNickName(nickName);
-        }
+        userInfo.setSex(sex);
         userInfoService.updateUserInfo(userInfo, avatar);
         return getSuccessResponseVo(null);
     }

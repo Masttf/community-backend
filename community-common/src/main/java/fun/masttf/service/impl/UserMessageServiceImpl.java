@@ -1,7 +1,6 @@
 package fun.masttf.service.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.service.UserMessageService;
 import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.entity.dto.MessageCountDto;
 import fun.masttf.entity.dto.UserMessageCountDto;
 import fun.masttf.entity.enums.MessageStatusEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
@@ -138,12 +138,12 @@ public class UserMessageServiceImpl implements UserMessageService {
 
 	@Override
 	public UserMessageCountDto getUserMessageCount(String userId){
-		List<Map<String, Integer>> list = userMessageMapper.selectUserMessageCount(userId);
+		List<MessageCountDto> list = userMessageMapper.selectUserMessageCount(userId);
 		UserMessageCountDto countDto = new UserMessageCountDto();
 		Integer total = 0;
-		for(Map<String, Integer> item : list) {
-			Integer type = item.get("messageType");
-			Integer count = item.get("count");
+		for(MessageCountDto item : list) {
+			Integer type = item.getMessageType();
+			Integer count = item.getCount();
 			total += count;
 			MessageTypeEnum messageTypeEnum = MessageTypeEnum.getByType(type);
 			switch (messageTypeEnum) {

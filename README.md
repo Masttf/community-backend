@@ -247,6 +247,8 @@ CREATE TABLE `user_message` (
 > [!NOTE]
 >
 > 考虑返回长度影响观感，这里列表的只截取一部分
+>
+> 没特殊说明的，都是一页15条
 
 ### 访客端
 
@@ -1216,6 +1218,245 @@ CREATE TABLE `user_message` (
   	"msg": "请求成功",
   	"data": {
   		"articleId": "69tCu71FeD"//原文章id
+  	}
+  }
+  ```
+
+
+#### 获取用户信息
+
+- 接口地址 `/api/user/getUserInfo`
+
+- 是否需要登录
+
+  否
+
+- 请求参数
+
+  | 参数名 | 说明   | 是否必填 |
+  | ------ | ------ | -------- |
+  | userId | 用户ID | 是       |
+
+- 返回
+
+  ```json
+  {
+  	"status": "success",
+  	"code": 200,
+  	"msg": "请求成功",
+  	"data": {
+  		"userId": "1890524956",
+  		"nickName": "测试账号",
+  		"sex": 1,
+  		"personDescription": "我只是一个测试账号而已",
+  		"joinTime": "2023-01-15",
+  		"lastLoginTime": "2025-05-17",
+  		"currentIntegral": 16,
+  		"postCount": 6,
+  		"likeCount": 3
+  	}
+  }
+  ```
+
+#### 获取用户积分记录
+
+- 接口地址 `/api/user/loadUserIntegralRecord`
+
+- 是否需要登录
+
+  是
+
+- 请求参数
+
+  | 参数名          | 说明     | 是否必填       |
+  | --------------- | -------- | -------------- |
+  | pageNo          | 页码     | 否，默认第一页 |
+  | createTimeStart | 开始时间 | 否             |
+  | createTimeEnd   | 结束时间 | 否             |
+
+- 返回
+
+  ```json
+  {
+  	"status": "success",
+  	"code": 200,
+  	"msg": "请求成功",
+  	"data": {
+  		"totalCount": 27,
+  		"pageSize": 15,
+  		"pageNo": 1,
+  		"pageTotal": 2,
+  		"list": [
+  			{
+  				"userId": "3782512644",
+  				"operType": 5,
+  				"operTypeDesc": "发布文章",
+  				"integral": 1,
+  				"createTime": "2025-05-17"
+  			},
+  			{
+  				"userId": "3782512644",
+  				"operType": 4,
+  				"operTypeDesc": "发布评论",
+  				"integral": 1,
+  				"createTime": "2025-05-15"
+  			}
+  		]
+  	}
+  }
+  ```
+
+#### 修改个人信息
+
+- 接口地址 `/api/user/updateUserInfo`
+
+- 是否需要登录
+
+  是
+
+- 请求参数
+
+  | 参数名     | 说明             | 是否必填 |
+  | ---------- | ---------------- | -------- |
+  | sex        | 性别 0:女 1:男   | 否       |
+  | personDesc | 个人描述 最大100 | 否       |
+  | avatar     | 头像 图片文件流  | 否       |
+
+- 返回
+
+  ```json
+  {
+  	"status": "success",
+  	"code": 200,
+  	"msg": "请求成功",
+  	"data": null
+  }
+  ```
+
+#### 获取用户未读消息数
+
+- 接口地址 `/api/user/getUserMessageCount`
+
+- 是否需要登录
+
+  是
+
+- 请求参数
+  无
+
+- 返回
+
+  ```json
+  {
+      "status":"success",
+      "code":200,
+      "msg":"请求成功",
+      "data":{
+          "total":3,//总数
+          "sys":15,//系统消息数
+          "reply":1,//评论消息数
+          "likePost":1,//文章点赞数
+          "likeComment":1,//评论点赞数
+      }
+  }    
+  ```
+
+#### 获取消息列表
+
+- 接口地址 `/api/user/loadMessageList`
+
+- 是否需要登录
+
+  是
+
+- 请求参数
+
+  | 参数名 | 说明                                                         | 是否必填 |
+  | ------ | ------------------------------------------------------------ | -------- |
+  | code   | 编号 sys:系统消息 reply:评论消息 likePost:文章点赞数 likeComment:评论点赞数 downloadAttachment:下载附件 | 是       |
+  | pageNo | 页码                                                         | 否 默认1 |
+
+- 返回
+
+  ```json
+    {
+        "status":"success",
+        "code":200,
+        "msg":"请求成功",
+        "data":{
+            "totalCount":3, //总记录数
+            "pageSize":50,//分页大小
+            "pageNo":1,//页码
+            "pageTotal":1,//总页数
+            "list":[
+                {
+                    "messageId":10003,//消息ID
+                    "articleId":"a7x6Ebr5AQkwLL2",//消息ID
+                    "articleTitle":"第一个帖子",//消息ID
+                    "commentId":10003,//评论ID
+                    "sendUserId":"1877685590",//发送人ID
+                    "sendNickName":"lomo",//发送人昵称
+                    "messageType":1,//消息类型 0:系统消息 1:评论 2:文章点赞  3:评论点赞
+                    "messageContent":"真·福利",//消息内容
+                    "createTime":"2023-01-02 15:34:07"//创建时间
+                }
+            ]
+        }
+    } 
+  ```
+
+#### 获取用户帖子情况
+
+- 接口地址 `/api/user/loadUserArticle`
+
+- 是否需要登录
+
+  否
+
+- 请求参数
+
+  | 参数名 | 说明                                       | 是否必填 |
+  | ------ | ------------------------------------------ | -------- |
+  | userId | 用户ID                                     | 是       |
+  | type   | 类型 0:发帖 1:评论过的文章  2:点赞过的文章 | 是       |
+  | pageNo | 页码                                       | 否默认1  |
+
+- 返回
+
+  ```json
+  {
+  	"status": "success",
+  	"code": 200,
+  	"msg": "请求成功",
+  	"data": {
+  		"totalCount": 1,
+  		"pageSize": 15,
+  		"pageNo": 1,
+  		"pageTotal": 1,
+  		"list": [
+  			{
+  				"articleId": "RtiXj832TFL4nhW",
+  				"boardId": 10003,
+  				"boardName": "Vue",
+  				"pBoardId": 10000,
+  				"pBoardName": "前端",
+  				"userId": "1890524956",
+  				"nickName": "测试账号",
+  				"userIpAddress": "未知",
+  				"title": "第一个帖子，带图，带附件",
+  				"cover": "202301/8Hyca1SDrUWhBRy.jpeg",
+  				"content": null,
+  				"markdownContent": null,
+  				"summary": "第一个帖子，带图，带附件，这里是摘要",
+  				"postTime": "2023-01-15 18:01:23",
+  				"readCount": 103,
+  				"goodCount": 0,
+  				"commentCount": 20,
+  				"topType": 0,
+  				"attachmentType": 1,
+  				"editorType": 1
+  			}
+  		]
   	}
   }
   ```

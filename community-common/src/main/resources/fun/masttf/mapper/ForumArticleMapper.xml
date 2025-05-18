@@ -182,7 +182,7 @@
 		</if>
 		<!-- 点赞待优化 -->
 		<if test="query.likeUserId != null and query.likeUserId != ''">
-			and article_id in (select article_id from forum_article_like where user_id = #{query.likeUserId} and op_type = 0)
+			and article_id in (select object_id from like_record where user_id = #{query.likeUserId} and op_type = 0)
 			and status = 1
 		</if>
 	</sql>

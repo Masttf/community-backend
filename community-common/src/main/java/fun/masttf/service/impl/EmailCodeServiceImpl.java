@@ -19,6 +19,7 @@ import fun.masttf.entity.po.UserInfo;
 import fun.masttf.entity.query.EmailCodeQuery;
 import fun.masttf.service.EmailCodeService;
 import fun.masttf.utils.StringTools;
+import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.mapper.EmailCodeMapper;
 import fun.masttf.mapper.UserInfoMapper;
 import fun.masttf.entity.query.SimplePage;
@@ -139,18 +140,14 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void sendEmailCode(String email, Integer type) {
-		String subject = null;
 		if (type == EmailTypeEnum.REGISTER.getType()) { // 注册
 			UserInfo userInfo = userInfoMapper.selectByEmail(email);
 			if (userInfo != null) {
 				throw new BusinessException("邮箱已存在");
 			}
-			subject = "注册邮箱验证码";
-		}else{
-			subject = "找回密码验证码";
 		}
 		String code = StringTools.getRandomString(Constans.LENGTH_5);
-		sendEmailCodeDo(email, code, subject);
+		sendEmailCodeDo(email, code);
 		//把之前的验证码置为失效
 		emailCodeMapper.disableEmailCode(email);
 		EmailCode emailCode = new EmailCode();
@@ -161,15 +158,15 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 		emailCodeMapper.insert(emailCode);
 	}
 
-	private void sendEmailCodeDo(String email, String code, String subject) {
+	private void sendEmailCodeDo(String email, String code) {
 		try {
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
 			helper.setFrom(webConfig.getSendUserName());
 			helper.setTo(email);
-			helper.setSubject(subject);
-			helper.setText("您的验证码是：" + code);
+			helper.setSubject(SysCacheUtils.getSysSetting().getEmailSetting().getEmailTittle());
+			helper.setText(String.format(SysCacheUtils.getSysSetting().getEmailSetting().getEmailContent(), code));
 			helper.setSentDate(new Date());
 			javaMailSender.send(message);
 		} catch (Exception e) {

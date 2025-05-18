@@ -149,8 +149,8 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 			throw new BusinessException(ResponseCodeEnum.CODE_404);
 		}
 		if(ArticleStatusEnum.AUDIT.getStatus().equals(article.getStatus())) {
-			forumArticleMapper.updateArticleCount(ArticleCountTypeEnum.READ_COUNT.getType(), Constans.ONE, articleId);
-			article.setReadCount(article.getReadCount() + Constans.ONE);
+			forumArticleMapper.updateArticleCount(ArticleCountTypeEnum.READ_COUNT.getType(), 1, articleId);
+			article.setReadCount(article.getReadCount() + 1);
 		}
 		return article;
 	}

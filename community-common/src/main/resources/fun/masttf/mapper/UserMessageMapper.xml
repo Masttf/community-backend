@@ -27,6 +27,11 @@
 		<result column="create_time" property="createTime" />
 	</resultMap>
 
+	<resultMap id="messageCountMap" type="fun.masttf.entity.dto.MessageCountDto">
+		<result column="messageType" property="messageType" />
+		<result column="count" property="count" />
+	</resultMap>
+
 	<!-- 基础查询列 -->
 	<sql id="BaseColumnList">
 		message_id,received_user_id,article_id,article_title,comment_id,send_user_id,send_nick_name,message_type,message_content,status,create_time
@@ -395,7 +400,7 @@
 		DELETE FROM user_message WHERE article_id = #{articleId} and comment_id = #{commentId} and send_user_id = #{sendUserId} and message_type = #{messageType}
 	</delete>
 
-	<select id="selectUserMessageCount" resultType="java.util.Map">
+	<select id="selectUserMessageCount" resultMap="messageCountMap">
 		SELECT message_type as messageType, count(1) as count
 		FROM user_message
 		WHERE received_user_id = #{receivedUserId} and status = 1

@@ -62,14 +62,14 @@ public class FileController extends ABaseController {
     public void getAvatar(HttpServletResponse response,
                         @PathVariable("userId") String userId) {
         String avatarFolderPath = webConfig.getProjectFolder() + Constans.FILE_FOLDER_FILE + FileUploadEnum.AVATAR.getFolder();
-        String avatarPath = avatarFolderPath + userId + Constans.AVATAR_SUFFIX;
+        String imageName = userId + "." + Constans.AVATAR_SUFFIX;
+        String avatarPath = avatarFolderPath + imageName;
         File avatarFolder = new File(avatarFolderPath);
         if (!avatarFolder.exists()) {
             throw new BusinessException("头像文件夹不存在");
             // avatarFolder.mkdirs();
         }
         File avatarFile = new File(avatarPath);
-        String imageName = userId + Constans.AVATAR_SUFFIX;
         if (!avatarFile.exists()) {
             imageName = Constans.AVATAR_DEFAULT;
         }

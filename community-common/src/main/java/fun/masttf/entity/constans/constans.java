@@ -6,8 +6,6 @@ public class Constans {
     public static final String SESSION_FREQUENCY_KEY = "session_frequency_key";
     public static final String STATUS_SUCCESS = "success";
     public static final String STATUS_ERROR = "error";
-    public static final Integer ZERO = 0;
-    public static final Integer ONE = 1;
     public static final Integer LENGTH_5 = 5;
     public static final Integer LENGTH_10 = 10;
     public static final Integer LENGTH_30 = 30;
@@ -20,7 +18,7 @@ public class Constans {
     public static final String FILE_FOLDER_TEMP = "temp/";
     public static final String FILE_FOLDER_AVATAR = "avatar/";
     public static final String FILE_FOLDER_IMAGES = "images/";
-    public static final String AVATAR_SUFFIX = ".webp";
+    public static final String AVATAR_SUFFIX = "webp";
     public static final String AVATAR_DEFAULT = "default.webp";
     public static final String[] IMAGE_SUFFIX = new String[] { "jpg" ,"jpeg", "png", "gif", "bmp", "webp" };
     public static final String[] ATTACHMENT_SUFFIX = new String[] { "doc", "docx", "xls", "xlsx", "ppt", "pptx",

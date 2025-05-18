@@ -1,9 +1,10 @@
 package fun.masttf.mapper;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
+
+import fun.masttf.entity.dto.MessageCountDto;
 
 /**
  * @Description:用户消息Mapper
@@ -43,7 +44,7 @@ public interface UserMessageMapper<T, P> extends BaseMapper<T, P> {
 	 */
 	Integer deleteByArticleIdAndCommentIdAndSendUserIdAndMessageType(@Param("articleId") String articleId, @Param("commentId") Integer commentId, @Param("sendUserId") String sendUserId, @Param("messageType") Integer messageType);
 
-	List<Map<String, Integer>> selectUserMessageCount(@Param("receivedUserId") String receivedUserId);
+	List<MessageCountDto> selectUserMessageCount(@Param("receivedUserId") String receivedUserId);
 
 	Integer updateMessageStatusBatchByMessageType(@Param("receivedUserId") String receivedUserId, @Param("messageType") Integer messageType, @Param("status") Integer status);
 }
