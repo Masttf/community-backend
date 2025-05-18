@@ -12,14 +12,14 @@ import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 public class ABaseController {
-    protected static final String STATUC_SUCCESS = "success";
+    protected static final String STATUS_SUCCESS = Constans.STATUS_SUCCESS;
 
-    protected static final String STATUC_ERROR = "error";
+    protected static final String STATUS_ERROR = Constans.STATUS_ERROR;
 
 
     protected <T> ResponseVo<T> getSuccessResponseVo(T t) {
         ResponseVo<T> responseVo = new ResponseVo<T>();
-        responseVo.setStatus(STATUC_SUCCESS);
+        responseVo.setStatus(STATUS_SUCCESS);
         responseVo.setCode(ResponseCodeEnum.CODE_200.getCode());
         responseVo.setMsg(ResponseCodeEnum.CODE_200.getMessage());
         responseVo.setData(t);
@@ -28,7 +28,7 @@ public class ABaseController {
 
     protected <T> ResponseVo<T> getBussinessErrorResponseVo(BusinessException e, T t) {
         ResponseVo<T> responseVo = new ResponseVo<T>();
-        responseVo.setStatus(STATUC_ERROR);
+        responseVo.setStatus(STATUS_ERROR);
         if(e.getCode() == null) {
             responseVo.setCode(ResponseCodeEnum.CODE_600.getCode());
         } else {
@@ -41,7 +41,7 @@ public class ABaseController {
 
     protected <T> ResponseVo<T> getServerErrorResponseVo(T t) {
         ResponseVo<T> responseVo = new ResponseVo<T>();
-        responseVo.setStatus(STATUC_ERROR);
+        responseVo.setStatus(STATUS_ERROR);
         responseVo.setCode(ResponseCodeEnum.CODE_500.getCode());
         responseVo.setMsg(ResponseCodeEnum.CODE_500.getMessage());
         responseVo.setData(t);

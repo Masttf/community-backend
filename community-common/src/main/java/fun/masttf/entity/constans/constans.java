@@ -3,6 +3,9 @@ package fun.masttf.entity.constans;
 public class Constans {
     public static final String CHECK_CODE_KEY = "check_code_key";
     public static final String CHECK_CODE_KEY_EMAIL = "check_code_key_email";
+    public static final String SESSION_FREQUENCY_KEY = "session_frequency_key";
+    public static final String STATUS_SUCCESS = "success";
+    public static final String STATUS_ERROR = "error";
     public static final Integer ZERO = 0;
     public static final Integer ONE = 1;
     public static final Integer LENGTH_5 = 5;
@@ -25,4 +28,5 @@ public class Constans {
 
     public static final Integer FILE_SIZE_1M = 1024 * 1024;
     public static final String READ_IMAGE_PATH = "/api/file/getImage/";
+
 }

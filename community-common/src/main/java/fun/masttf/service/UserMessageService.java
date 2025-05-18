@@ -2,6 +2,7 @@ package fun.masttf.service;
 
 import java.util.List;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.entity.dto.UserMessageCountDto;
 import fun.masttf.entity.po.UserMessage;
 import fun.masttf.entity.query.UserMessageQuery;
 
@@ -73,4 +74,7 @@ public interface UserMessageService {
 	 */
 	Integer deleteByArticleIdAndCommentIdAndSendUserIdAndMessageType(String articleId, Integer commentId, String sendUserId, Integer messageType);
 
+	UserMessageCountDto getUserMessageCount(String userId);
+
+	void readMessageByType(String receivedUserId, Integer messageType);
 }

@@ -1,6 +1,8 @@
 package fun.masttf.service.impl;
 
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
@@ -9,6 +11,9 @@ import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.service.UserMessageService;
 import fun.masttf.mapper.UserMessageMapper;
 import fun.masttf.entity.query.SimplePage;
+import fun.masttf.entity.dto.UserMessageCountDto;
+import fun.masttf.entity.enums.MessageStatusEnum;
+import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.PageSize;
 
 /**
@@ -129,6 +134,43 @@ public class UserMessageServiceImpl implements UserMessageService {
 	@Override
 	public Integer deleteByArticleIdAndCommentIdAndSendUserIdAndMessageType(String articleId, Integer commentId, String sendUserId, Integer messageType) {
 		return userMessageMapper.deleteByArticleIdAndCommentIdAndSendUserIdAndMessageType(articleId, commentId, sendUserId, messageType);
+	}
+
+	@Override
+	public UserMessageCountDto getUserMessageCount(String userId){
+		List<Map<String, Integer>> list = userMessageMapper.selectUserMessageCount(userId);
+		UserMessageCountDto countDto = new UserMessageCountDto();
+		Integer total = 0;
+		for(Map<String, Integer> item : list) {
+			Integer type = item.get("messageType");
+			Integer count = item.get("count");
+			total += count;
+			MessageTypeEnum messageTypeEnum = MessageTypeEnum.getByType(type);
+			switch (messageTypeEnum) {
+				case SYS:
+					countDto.setSys(count);
+					break;
+				case COMMENT:
+					countDto.setReply(count);
+					break;
+				case ARTICLE_LIKE:
+					countDto.setLikePost(count);
+					break;
+				case COMMENT_LIKE:
+					countDto.setLikeComment(count);
+					break;
+				case DOWNLOAD_ATTACHMENT:
+					countDto.setDownloadAttachment(count);
+					break;
+			}
+		}
+		countDto.setTotal(total);
+		return countDto;
+	}
+
+	@Override
+	public void readMessageByType(String receivedUserId, Integer messageType) {
+		userMessageMapper.updateMessageStatusBatchByMessageType(receivedUserId, messageType, MessageStatusEnum.READ.getStatus());
 	}
 
 }

@@ -334,4 +334,34 @@ public class ForumArticleController extends ABaseController {
         map.put("articleId", article.getArticleId());
         return getSuccessResponseVo(map);
     }
+
+    @RequestMapping("/search")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVo<Object> search(HttpSession session, @VerifyParam(required = true) String keyword, Integer pageNo) {
+        ForumArticleQuery articleQuery = new ForumArticleQuery();
+        articleQuery.setTitleFuzzy(keyword);
+        articleQuery.setPageNo(pageNo);
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        if(userDto != null) {
+            articleQuery.setCurrentUserId(userDto.getUserId());
+        }else{
+            articleQuery.setStatus(ArticleStatusEnum.AUDIT.getStatus());
+        }
+        PaginationResultVo<ForumArticle> paginationResultVo = forumArticleService.findListByPage(articleQuery);
+        return getSuccessResponseVo(convert2PaginationVo(paginationResultVo, ForumArticleVo.class));
+    }
+
+    @RequestMapping("/deleteArticle")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVo<Object> deleteArticle(HttpSession session, @VerifyParam(required = true) String articleId) {
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        ForumArticle article = forumArticleService.readArticle(articleId);
+        if(article == null ||article.getStatus().equals(ArticleStatusEnum.DEL.getStatus()) || !article.getUserId().equals(userDto.getUserId())) {
+            throw new BusinessException(ResponseCodeEnum.CODE_404);
+        }
+        ForumArticle articleTemp = new ForumArticle();
+        articleTemp.setStatus(ArticleStatusEnum.DEL.getStatus());
+        forumArticleService.updateByArticleId(articleTemp, articleId);
+        return getSuccessResponseVo(null);
+    }
 }

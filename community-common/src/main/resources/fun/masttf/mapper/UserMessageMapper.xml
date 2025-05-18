@@ -395,4 +395,16 @@
 		DELETE FROM user_message WHERE article_id = #{articleId} and comment_id = #{commentId} and send_user_id = #{sendUserId} and message_type = #{messageType}
 	</delete>
 
+	<select id="selectUserMessageCount" resultType="java.util.Map">
+		SELECT message_type as messageType, count(1) as count
+		FROM user_message
+		WHERE received_user_id = #{receivedUserId} and status = 1
+		group by message_type
+	</select>
+
+	<update id="updateMessageStatusBatchByMessageType">
+		UPDATE user_message
+		SET status = #{status}
+		WHERE received_user_id = #{receivedUserId} and message_type = #{messageType}
+	</update>
 </mapper>

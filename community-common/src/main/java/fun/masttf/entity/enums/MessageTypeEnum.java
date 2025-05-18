@@ -26,6 +26,15 @@ public enum MessageTypeEnum {
         return null;
     }
 
+    public static MessageTypeEnum getByType(Integer type) {
+        for (MessageTypeEnum message : MessageTypeEnum.values()) {
+            if (message.getType().equals(type)) {
+                return message;
+            }
+        }
+        return null;
+    }
+
     public Integer getType() {
         return type;
     }

@@ -5,6 +5,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+
+import fun.masttf.entity.enums.UserOpFrequencyTypeEnum;
+
 import java.lang.annotation.RetentionPolicy;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
@@ -25,4 +29,5 @@ public @interface GlobalInterceptor {
     /*
      * 校验频次
      */
+    UserOpFrequencyTypeEnum checkFrequency() default UserOpFrequencyTypeEnum.NO_CHECK;
 }

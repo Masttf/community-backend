@@ -1,69 +1,63 @@
 server:
-  port: 7071
-  servlet:
-    context-path: /api
-    session:
-      timeout: PT60M #session过期时间 60M 一个小时
+    port: 7071
+    servlet:
+        context-path: /api
+        session:
+            timeout: PT60M #session过期时间 60M 一个小时
 
 spring:
-  mvc:
-    #Spring Boot 2.x 默认已禁用 favicon 处理，无需显式配置。
-    # favicon:
-    #   enable: false #处理favicon
-    throw-exception-if-no-handler-found: true #错误页处理
-  web:
-    resources:
-      add-mappings: false #不添加默认的静态资源处理
-  #数据库配置
-  datasource:
-    url: jdbc:mysql://127.0.0.1:3306/community?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
-    username: root
-    password: 123456
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      pool-name: HikariCPDatasource
-      minimum-idle: 5
-      idle-timeout: 180000
-      maximum-pool-size: 10
-      auto-commit: true
-      max-lifetime: 1800000
-      connection-timeout: 30000
-      connection-test-query: SELECT 1
-  #发送邮件配置相关
-  mail:
-    host: smtp.qq.com # 配置邮件服务器的地址
-    port: 465 # 配置邮件服务器的端口（465或587）
-    username: test@qq.com # 配置用户的账号
-    password: 123 # 配置用户的密码
-    default-encoding: UTF-8 # 配置默认编码
-    properties: # SSL 连接配置
-      mail:
-        smtp:
-          socketFactory:
-              class: javax.net.ssl.SSLSocketFactory
-      # 开启 debug，这样方便开发者查看邮件发送日志
-        debug: true
-#配置管理员账号密码
-admin:
-  account: admin
-  password: admin123
-  #超级管理员id
-  emails: test@qq.com
+    mvc:
+        #Spring Boot 2.x 默认已禁用 favicon 处理，无需显式配置。
+        # favicon:
+        #   enable: false #处理favicon
+        throw-exception-if-no-handler-found: true #错误页处理
+    web:
+        resources:
+            add-mappings: false #不添加默认的静态资源处理
+    #数据库配置
+    datasource:
+        url: jdbc:mysql://127.0.0.1:3306/community?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        hikari:
+            pool-name: HikariCPDatasource
+            minimum-idle: 5
+            idle-timeout: 180000
+            maximum-pool-size: 10
+            auto-commit: true
+            max-lifetime: 1800000
+            connection-timeout: 30000
+            connection-test-query: SELECT 1
+    #发送邮件配置相关
+    mail:
+        host: smtp.qq.com # 配置邮件服务器的地址
+        port: 465 # 配置邮件服务器的端口（465或587）
+        default-encoding: UTF-8 # 配置默认编码
+        properties: # SSL 连接配置
+            mail:
+                smtp:
+                    socketFactory:
+                        class: javax.net.ssl.SSLSocketFactory
+                # 开启 debug，这样方便开发者查看邮件发送日志
+                debug: true
+    config:
+        import:
+            - classpath:application-secret.yaml
+    servlet:
+        multipart:
+            max-file-size: 10MB
+            max-request-size: 10MB
+
 #项目根目录
 project:
-  folder: /Users/masttf/coding/springboot/community/
+    folder: /Users/masttf/coding/springboot/community/
 #日志级别配置
 log:
-  root:
-    level: debug
-#内部接口相关
-inner:
-  api:
-    appKey: easybbs
-    appSecret: easybbs_key
+    root:
+        level: debug
+
 #web端接口地址
 web:
-  api:
-    url: http://localhost:7070/api/innerApi/refresSysSetting
+    api:
+        url: http://localhost:7070/api/innerApi/refresSysSetting
 #是否是开发环境
 isDev: true

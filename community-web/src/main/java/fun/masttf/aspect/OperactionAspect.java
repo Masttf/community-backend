@@ -12,6 +12,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -19,9 +20,21 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import fun.masttf.annotation.GlobalInterceptor;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
+import fun.masttf.entity.dto.SysSettingDto;
+import fun.masttf.entity.enums.DateTimePatternEnum;
 import fun.masttf.entity.enums.ResponseCodeEnum;
+import fun.masttf.entity.enums.UserOpFrequencyTypeEnum;
+import fun.masttf.entity.query.ForumArticleQuery;
+import fun.masttf.entity.query.ForumCommentQuery;
+import fun.masttf.entity.query.LikeRecordQuery;
+import fun.masttf.entity.vo.ResponseVo;
 import fun.masttf.exception.BusinessException;
+import fun.masttf.service.ForumArticleService;
+import fun.masttf.service.ForumCommentService;
+import fun.masttf.service.LikeRecordService;
+import fun.masttf.utils.DateUtils;
 import fun.masttf.utils.StringTools;
+import fun.masttf.utils.SysCacheUtils;
 import fun.masttf.utils.VerifyUtils;
 
 @Component
@@ -30,6 +43,14 @@ public class OperactionAspect {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(OperactionAspect.class);
     
     private static final String[] TYPE_BASE = {"java.lang.String", "java.lang.Integer", "java.lang.Long"};
+    
+    @Autowired
+    private ForumArticleService forumArticleService;
+    @Autowired
+    private ForumCommentService forumCommentService;
+    @Autowired
+    private LikeRecordService likeRecordService;
+
     @Pointcut("@annotation(fun.masttf.annotation.GlobalInterceptor)")
     public void requestInterceptor() {
         // Pointcut for methods annotated with @GlobalInterceptor
@@ -53,7 +74,15 @@ public class OperactionAspect {
             if(interceptor.checkParams()){
                 validateParams(method, args);
             }
+            checkFrequency(interceptor.checkFrequency());
             Object result = point.proceed();
+
+            if(result instanceof ResponseVo) {
+                ResponseVo<?> response = (ResponseVo<?>) result;
+                if(response.getStatus().equals(Constans.STATUS_SUCCESS)){
+                    addOpCount(interceptor.checkFrequency());
+                }
+            }
             return result;
         }catch(BusinessException e){
             logger.error("OperactionAspect: 错误", e);
@@ -92,7 +121,7 @@ public class OperactionAspect {
             if(ArrayUtils.contains(TYPE_BASE, parameter.getType().getName())){
                 checkValue(value, verifyParam);
             }else{
-
+                checkObjValue(parameter, value);
             }
         }
     }
@@ -118,5 +147,89 @@ public class OperactionAspect {
             // logger.error("参数不符合正则要求");
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
+    }
+    private void checkFrequency(UserOpFrequencyTypeEnum frequencyType) {
+        if (frequencyType == null || frequencyType.equals(UserOpFrequencyTypeEnum.NO_CHECK)) {
+            return;
+        }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (requestAttributes == null) {
+            // 如果不在Web请求上下文中，抛出异常
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        HttpServletRequest request = requestAttributes.getRequest();
+        HttpSession session = request.getSession();
+        SessionWebUserDto userDto = (SessionWebUserDto) session.getAttribute(Constans.SESSION_KEY);
+        String curDate = DateUtils.format(new java.util.Date(), DateTimePatternEnum.YYYY_MM_DD.getPattern());
+        String frequencyKey = Constans.SESSION_FREQUENCY_KEY + curDate + frequencyType.getOpType();
+        Integer count = (Integer) session.getAttribute(frequencyKey);
+        SysSettingDto setting = SysCacheUtils.getSysSetting();
+
+        switch (frequencyType) {
+            case POST_ARTICLE:
+                if(count == null) {
+                    ForumArticleQuery query = new ForumArticleQuery();
+                    query.setUserId(userDto.getUserId());
+                    query.setPostTimeStart(curDate);
+                    query.setPostTimeEnd(curDate);
+                    count = forumArticleService.findCountByQuery(query);
+                }
+                if(count > setting.getPostSetting().getPostDayCountThreshold()){
+                    throw new BusinessException(ResponseCodeEnum.CODE_602);
+                }
+                break;
+            case POST_COMMENT:
+                if(count == null) {
+                    ForumCommentQuery query = new ForumCommentQuery();
+                    query.setUserId(userDto.getUserId());
+                    query.setPostTimeStart(curDate);
+                    query.setPostTimeEnd(curDate);
+                    count = forumCommentService.findCountByQuery(query);
+                }
+                if(count > setting.getCommentSetting().getCommentDayCountThreshold()){
+                    throw new BusinessException(ResponseCodeEnum.CODE_602);
+                }
+                break;
+            case DO_LIKE:
+                if(count == null) {
+                    LikeRecordQuery query = new LikeRecordQuery();
+                    query.setUserId(userDto.getUserId());
+                    query.setCreateTimeStart(curDate);
+                    query.setCreateTimeEnd(curDate);
+                    count = likeRecordService.findCountByQuery(query);
+                }
+                if(count > setting.getLikeSetting().getLikeDayCountThresold()){
+                    throw new BusinessException(ResponseCodeEnum.CODE_602);
+                }
+                break;
+            case IMAGE_UPLOAD:
+                if(count == null) {
+                    count = 0;
+                }
+                if(count > setting.getPostSetting().getDayImageUploadCount()){
+                    throw new BusinessException(ResponseCodeEnum.CODE_602);
+                }
+                break;
+            default:
+                break;
+        }
+        session.setAttribute(frequencyKey, count);
+    }
+
+    private void addOpCount(UserOpFrequencyTypeEnum frequencyType) {
+        if (frequencyType == null || frequencyType.equals(UserOpFrequencyTypeEnum.NO_CHECK)) {
+            return;
+        }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (requestAttributes == null) {
+            // 如果不在Web请求上下文中，抛出异常
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        HttpServletRequest request = requestAttributes.getRequest();
+        HttpSession session = request.getSession();
+        String curDate = DateUtils.format(new java.util.Date(), DateTimePatternEnum.YYYY_MM_DD.getPattern());
+        String frequencyKey = Constans.SESSION_FREQUENCY_KEY + curDate + frequencyType.getOpType();
+        Integer count = (Integer) session.getAttribute(frequencyKey);
+        session.setAttribute(frequencyKey, count + 1);
     }
 }

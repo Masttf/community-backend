@@ -12,6 +12,8 @@ import fun.masttf.aspect.VerifyParam;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.ArticleOrderTypeEnum;
 import fun.masttf.entity.enums.ArticleStatusEnum;
+import fun.masttf.entity.enums.MessageOrderTypeEnum;
+import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.ResponseCodeEnum;
 import fun.masttf.entity.enums.UserIntegralRecordOrderTypeEnum;
 import fun.masttf.entity.enums.UserSexEnum;
@@ -19,9 +21,11 @@ import fun.masttf.entity.enums.UserStatusEnum;
 import fun.masttf.entity.po.ForumArticle;
 import fun.masttf.entity.po.UserInfo;
 import fun.masttf.entity.po.UserIntegralRecord;
+import fun.masttf.entity.po.UserMessage;
 import fun.masttf.entity.query.ForumArticleQuery;
 import fun.masttf.entity.query.LikeRecordQuery;
 import fun.masttf.entity.query.UserIntegralRecordQuery;
+import fun.masttf.entity.query.UserMessageQuery;
 import fun.masttf.entity.vo.ForumArticleVo;
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.entity.vo.ResponseVo;
@@ -32,6 +36,7 @@ import fun.masttf.service.ForumArticleService;
 import fun.masttf.service.LikeRecordService;
 import fun.masttf.service.UserInfoService;
 import fun.masttf.service.UserIntegralRecordService;
+import fun.masttf.service.UserMessageService;
 import fun.masttf.utils.CopyTools;
 
 @RestController
@@ -45,6 +50,8 @@ public class UserCenterController extends ABaseController {
     private LikeRecordService likeRecordService;
     @Autowired
     private UserIntegralRecordService userIntegralRecordService;
+    @Autowired
+    private UserMessageService userMessageService;
 
     @RequestMapping("/getUserInfo")
     @GlobalInterceptor(checkParams = true)
@@ -130,5 +137,35 @@ public class UserCenterController extends ABaseController {
         userIntegralRecordQuery.setOrderBy(UserIntegralRecordOrderTypeEnum.NEW.getOderSql());
         PaginationResultVo<UserIntegralRecord> paginationResultVo = userIntegralRecordService.findListByPage(userIntegralRecordQuery);
         return getSuccessResponseVo(convert2PaginationVo(paginationResultVo, UserIntegralRecordVo.class));
+    }
+
+    /*
+     * 获取未读消息数量
+     */
+    @RequestMapping("/getUserMessageCount")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVo<Object> getUserMessageCount(HttpSession session) {
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        return getSuccessResponseVo(userMessageService.getUserMessageCount(userDto.getUserId()));
+    }
+
+    @RequestMapping("/loadMessageList")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVo<Object> loadMessageList(HttpSession session,@VerifyParam(required = true) String code, Integer PageNo) {
+        MessageTypeEnum messageTypeEnum = MessageTypeEnum.getByCode(code);
+        if(messageTypeEnum == null){
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        UserMessageQuery userMessageQuery = new UserMessageQuery();
+        userMessageQuery.setPageNo(PageNo);
+        userMessageQuery.setReceivedUserId(userDto.getUserId());
+        userMessageQuery.setMessageType(messageTypeEnum.getType());
+        userMessageQuery.setOrderBy(MessageOrderTypeEnum.NEW.getOderSql());
+        PaginationResultVo<UserMessage> paginationResultVo = userMessageService.findListByPage(userMessageQuery);
+        if(PageNo == null || PageNo == 1){
+            userMessageService.readMessageByType(userDto.getUserId(), messageTypeEnum.getType());
+        }
+        return getSuccessResponseVo(paginationResultVo);
     }
 }

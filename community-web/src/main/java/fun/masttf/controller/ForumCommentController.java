@@ -130,5 +130,20 @@ public class ForumCommentController extends ABaseController {
 
         return getSuccessResponseVo(comment);
     }
+
+    @RequestMapping("/deleteComment")
+    @GlobalInterceptor(checkLogin = true,checkParams = true)
+    public ResponseVo<Object> deleteComment(HttpSession session,
+                    @VerifyParam(required = true) Integer commentId) {
+        SessionWebUserDto userDto = getUserInfoSession(session);
+        ForumComment comment = forumCommentService.getByCommentId(commentId);
+        if(comment == null || comment.getStatus().equals(CommentStatusEnum.DEL.getStatus()) || !userDto.getUserId().equals(comment.getUserId())){
+            throw new BusinessException(ResponseCodeEnum.CODE_404);
+        }
+        ForumComment updateComment = new ForumComment();
+        updateComment.setStatus(CommentStatusEnum.DEL.getStatus());
+        forumCommentService.updateByCommentId(updateComment, commentId);    
+        return getSuccessResponseVo(null);
+    }
     
 }
