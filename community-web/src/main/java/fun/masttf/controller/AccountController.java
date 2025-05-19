@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import fun.masttf.annotation.GlobalInterceptor;
-import fun.masttf.aspect.VerifyParam;
+import fun.masttf.annotation.VerifyParam;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.CreateImageCode;
 import fun.masttf.entity.dto.SessionWebUserDto;
@@ -98,7 +98,7 @@ public class AccountController extends ABaseController {
             @VerifyParam(required = true, min = 8, max = 18, regex = VerifyRegexEnum.PASSWORD) String password, 
             @VerifyParam(required = true) String checkCode) {
         try {
-            String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
+            String code = (String) session.getAttribute(CheckCodeTypeEnum.COMMON.getSessionAttribute());
             if (code == null || !code.equals(checkCode)) {
                 throw new BusinessException("图片验证码错误");
             }
@@ -127,7 +127,7 @@ public class AccountController extends ABaseController {
             return getSuccessResponseVo(sessionWebUserDto);
         } finally {
             // 清除验证码
-            session.removeAttribute(Constans.CHECK_CODE_KEY);
+            session.removeAttribute(CheckCodeTypeEnum.COMMON.getSessionAttribute());
         }
     }
 
@@ -162,7 +162,7 @@ public class AccountController extends ABaseController {
             @VerifyParam(required = true, min = 8, max = 18, regex = VerifyRegexEnum.PASSWORD) String password, 
             @VerifyParam(required = true) String checkCode) {
         try {
-            String code = (String) session.getAttribute(Constans.CHECK_CODE_KEY);
+            String code = (String) session.getAttribute(CheckCodeTypeEnum.COMMON.getSessionAttribute());
             if (code == null || !code.equals(checkCode)) {
                 throw new BusinessException("图片验证码错误");
             }
@@ -170,7 +170,7 @@ public class AccountController extends ABaseController {
             return getSuccessResponseVo(null);
         } finally {
             // 清除验证码
-            session.removeAttribute(Constans.CHECK_CODE_KEY);
+            session.removeAttribute(CheckCodeTypeEnum.COMMON.getSessionAttribute());
         }
     }
 }

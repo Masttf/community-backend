@@ -55,9 +55,3 @@ log:
     root:
         level: debug
 
-#web端接口地址
-web:
-    api:
-        url: http://localhost:7070/api/innerApi/refresSysSetting
-#是否是开发环境
-isDev: true

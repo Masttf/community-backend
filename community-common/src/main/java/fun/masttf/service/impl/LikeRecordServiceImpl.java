@@ -169,7 +169,6 @@ public class LikeRecordServiceImpl implements LikeRecordService {
 				articleLike(article, userId);
 				userMessage.setArticleId(objectId);
 				userMessage.setArticleTitle(article.getTitle());
-				userMessage.setCommentId(0);
 				userMessage.setMessageType(MessageTypeEnum.ARTICLE_LIKE.getType());
 				userMessage.setMessageContent(nickName + "点赞了你的文章");
 				userMessage.setReceivedUserId(article.getUserId());

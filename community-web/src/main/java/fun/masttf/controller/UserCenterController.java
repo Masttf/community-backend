@@ -8,10 +8,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import fun.masttf.annotation.GlobalInterceptor;
-import fun.masttf.aspect.VerifyParam;
+import fun.masttf.annotation.VerifyParam;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.enums.ArticleOrderTypeEnum;
 import fun.masttf.entity.enums.ArticleStatusEnum;
+import fun.masttf.entity.enums.LoadUserArticleTypeEnum;
 import fun.masttf.entity.enums.MessageOrderTypeEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
 import fun.masttf.entity.enums.ResponseCodeEnum;
@@ -77,6 +78,10 @@ public class UserCenterController extends ABaseController {
     @RequestMapping("/loadUserArticle")
     @GlobalInterceptor(checkParams = true)
     public ResponseVo<Object> loadUserArticle(HttpSession session,@VerifyParam(required = true) String userId, Integer type, Integer pageNo) {
+        LoadUserArticleTypeEnum loadUserArticleTypeEnum = LoadUserArticleTypeEnum.getByType(type);
+        if(loadUserArticleTypeEnum == null){
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
         UserInfo userInfo = userInfoService.getByUserId(userId);
         if(userInfo == null || userInfo.getStatus().equals(UserStatusEnum.DISABLE.getStatus())) {
             throw new BusinessException(ResponseCodeEnum.CODE_404);
@@ -84,12 +89,16 @@ public class UserCenterController extends ABaseController {
         ForumArticleQuery articleQuery = new ForumArticleQuery();
         articleQuery.setOrderBy(ArticleOrderTypeEnum.NEW.getOderSql());
         articleQuery.setPageNo(pageNo);
-        if(type == 0){
-            articleQuery.setUserId(userId);
-        }else if(type == 1){
-            articleQuery.setCommentUserId(userId);
-        }else if(type == 2){
-            articleQuery.setLikeUserId(userId);
+        switch (loadUserArticleTypeEnum){
+            case POST_ARTICLE:
+                articleQuery.setUserId(userId);
+                break;
+            case COMMENT_ARTICLE:
+                articleQuery.setCommentUserId(userId);
+                break;
+            case LIKE_ARTICLE:
+                articleQuery.setLikeUserId(userId);
+                break;
         }
         SessionWebUserDto userDto = getUserInfoSession(session);
         if(userDto != null){

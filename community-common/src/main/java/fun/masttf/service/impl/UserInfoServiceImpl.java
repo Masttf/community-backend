@@ -323,4 +323,6 @@ public class UserInfoServiceImpl implements UserInfoService {
 			fileUtils.uploadFile2Local(avatar, FileUploadEnum.AVATAR, userInfo.getUserId());
 		}
 	}
+
+	
 }

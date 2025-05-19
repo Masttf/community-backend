@@ -1,5 +1,6 @@
 package fun.masttf.aspect;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
@@ -18,6 +19,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import fun.masttf.annotation.GlobalInterceptor;
+import fun.masttf.annotation.VerifyParam;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
 import fun.masttf.entity.dto.SysSettingDto;
@@ -126,7 +128,21 @@ public class OperactionAspect {
         }
     }
     private void checkObjValue(Parameter parameter, Object value) {
-
+        try{
+            String typeName = parameter.getParameterizedType().getTypeName();
+            Class<?> classz = Class.forName(typeName);
+            Field[] fields = classz.getDeclaredFields();
+            for (Field field : fields) {
+                VerifyParam verifyParam = field.getAnnotation(VerifyParam.class);
+                if(verifyParam == null) continue;
+                field.setAccessible(true);
+                Object fieldValue = field.get(value);
+                checkValue(fieldValue, verifyParam);
+            }
+        }catch (Exception e) {
+            logger.error("OperactionAspect: 错误", e);
+            throw new BusinessException(ResponseCodeEnum.CODE_500);
+        }
     }
     private void checkValue(Object value, VerifyParam verifyParam) {
         Boolean isEmpty = value == null || StringTools.isEmpty(value.toString());

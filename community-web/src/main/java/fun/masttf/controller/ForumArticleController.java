@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import fun.masttf.annotation.GlobalInterceptor;
-import fun.masttf.aspect.VerifyParam;
+import fun.masttf.annotation.VerifyParam;
 import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
@@ -351,17 +351,17 @@ public class ForumArticleController extends ABaseController {
         return getSuccessResponseVo(convert2PaginationVo(paginationResultVo, ForumArticleVo.class));
     }
 
-    @RequestMapping("/deleteArticle")
-    @GlobalInterceptor(checkLogin = true, checkParams = true)
-    public ResponseVo<Object> deleteArticle(HttpSession session, @VerifyParam(required = true) String articleId) {
-        SessionWebUserDto userDto = getUserInfoSession(session);
-        ForumArticle article = forumArticleService.readArticle(articleId);
-        if(article == null ||article.getStatus().equals(ArticleStatusEnum.DEL.getStatus()) || !article.getUserId().equals(userDto.getUserId())) {
-            throw new BusinessException(ResponseCodeEnum.CODE_404);
-        }
-        ForumArticle articleTemp = new ForumArticle();
-        articleTemp.setStatus(ArticleStatusEnum.DEL.getStatus());
-        forumArticleService.updateByArticleId(articleTemp, articleId);
-        return getSuccessResponseVo(null);
-    }
+    // @RequestMapping("/deleteArticle")
+    // @GlobalInterceptor(checkLogin = true, checkParams = true)
+    // public ResponseVo<Object> deleteArticle(HttpSession session, @VerifyParam(required = true) String articleId) {
+    //     SessionWebUserDto userDto = getUserInfoSession(session);
+    //     ForumArticle article = forumArticleService.readArticle(articleId);
+    //     if(article == null ||article.getStatus().equals(ArticleStatusEnum.DEL.getStatus()) || !article.getUserId().equals(userDto.getUserId())) {
+    //         throw new BusinessException(ResponseCodeEnum.CODE_404);
+    //     }
+    //     ForumArticle articleTemp = new ForumArticle();
+    //     articleTemp.setStatus(ArticleStatusEnum.DEL.getStatus());
+    //     forumArticleService.updateByArticleId(articleTemp, articleId);
+    //     return getSuccessResponseVo(null);
+    // }
 }

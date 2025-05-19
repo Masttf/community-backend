@@ -64,4 +64,12 @@ public interface ForumCommentService {
 	void changeTopType(String userId,Integer commentId, Integer topType);
 
 	void postComment(ForumComment comment, MultipartFile image);
+
+	void deleteComment(String commentIds);
+
+	void deleteCommentSingle(Integer commentId);
+
+	void auditComment(String commentIds);
+
+	void auditCommentSingle(Integer commentId);
 }

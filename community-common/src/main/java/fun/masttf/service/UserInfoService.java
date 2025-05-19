@@ -102,4 +102,5 @@ public interface UserInfoService {
 	void resetPwd(String email, String emailCode, String password);
 
 	void updateUserInfo(UserInfo userInfo, MultipartFile avatar);
+
 }

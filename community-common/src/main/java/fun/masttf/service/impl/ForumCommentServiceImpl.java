@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.exception.BusinessException;
 import fun.masttf.entity.po.ForumArticle;
@@ -59,6 +61,10 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 	private UserMessageMapper<UserMessage,UserMessageQuery> userMessageMapper;
 	@Autowired
 	private FileUtils fileUtils;
+
+	@Lazy
+	@Autowired
+	private ForumCommentService forumCommentService;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -259,5 +265,69 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 		if(!comment.getUserId().equals(userMessage.getReceivedUserId())) {
 			userMessageMapper.insert(userMessage);
 		}
+	}
+
+	@Override
+	public void deleteComment(String commentIds) {
+		String[] ids = commentIds.split(",");
+		for(String commentId : ids) {
+			forumCommentService.deleteCommentSingle(Integer.parseInt(commentId));
+		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void deleteCommentSingle(Integer commentId) {
+		ForumComment comment = forumCommentMapper.selectByCommentId(commentId);
+		if(comment == null || comment.getStatus().equals(CommentStatusEnum.DEL.getStatus())) {
+			return ;
+		}
+		ForumComment updateInfo = new ForumComment();
+		updateInfo.setStatus(CommentStatusEnum.DEL.getStatus());
+		forumCommentMapper.updateByCommentId(updateInfo, commentId);
+
+		if(comment.getStatus().equals(CommentStatusEnum.AUDIT.getStatus())) {
+			forumArticleMapper.updateArticleCount(ArticleCountTypeEnum.COMMENT_COUNT.getType(), -1, comment.getArticleId());
+			//扣除积分
+			// Integer commentIntegral = SysCacheUtils.getSysSetting().getCommentSetting().getCommentIntegral();
+			// if(commentIntegral != null && commentIntegral > 0) {
+			// 	userInfoService.updateUserIntegral(comment.getUserId(), UserIntegralOperTypeEnum.POST_COMMENT, UserIntegralChangeTypeEnum.REDUCE.getChangeType(), commentIntegral);
+			// }
+		}
+		UserMessage userMessage = new UserMessage();
+		userMessage.setCommentId(commentId);
+		userMessage.setStatus(MessageStatusEnum.NO_READ.getStatus());
+		userMessage.setCreateTime(new Date());
+		userMessage.setArticleId(comment.getArticleId());
+		userMessage.setMessageType(MessageTypeEnum.SYS.getType());
+		userMessage.setMessageContent("你的评论["+comment.getContent()+"]已被管理员删除");
+		userMessageMapper.insert(userMessage);
+	}
+
+	@Override
+	public void auditComment(String commentIds) {
+		String[] ids = commentIds.split(",");
+		for(String commentId : ids) {
+			forumCommentService.auditCommentSingle(Integer.parseInt(commentId));
+		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void auditCommentSingle(Integer commentId) {
+		ForumComment comment = forumCommentMapper.selectByCommentId(commentId);
+		if(comment == null || comment.getStatus().equals(CommentStatusEnum.AUDIT.getStatus()) || comment.getStatus().equals(CommentStatusEnum.DEL.getStatus())) {
+			return ;
+		}
+		ForumComment updateInfo = new ForumComment();
+		updateInfo.setStatus(CommentStatusEnum.AUDIT.getStatus());
+		forumCommentMapper.updateByCommentId(updateInfo, commentId);
+
+		ForumArticle article = forumArticleMapper.selectByArticleId(comment.getArticleId());
+		ForumComment pComment = null;
+		if(comment.getpCommentId() != 0 && !StringTools.isEmpty(comment.getReplyUserId())) {
+			pComment = forumCommentMapper.selectByCommentId(comment.getpCommentId());
+		}
+		updateCommentInfo(comment, article, pComment);
 	}
 }

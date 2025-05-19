@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import fun.masttf.annotation.GlobalInterceptor;
-import fun.masttf.aspect.VerifyParam;
+import fun.masttf.annotation.VerifyParam;
 import fun.masttf.config.WebConfig;
 import fun.masttf.controller.ABaseController;
 import fun.masttf.entity.enums.ResponseCodeEnum;

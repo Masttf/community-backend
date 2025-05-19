@@ -179,7 +179,6 @@ public class ForumArticleAttachmentServiceImpl implements ForumArticleAttachment
 		UserMessage userMessage = new UserMessage();
 		userMessage.setArticleId(attachment.getArticleId());
 		userMessage.setArticleTitle(article.getTitle());
-		userMessage.setCommentId(0);
 		userMessage.setCreateTime(new Date());
 		userMessage.setMessageType(MessageTypeEnum.DOWNLOAD_ATTACHMENT.getType());
 		userMessage.setMessageContent(userDto.getNickName() + "下载了你的附件");
