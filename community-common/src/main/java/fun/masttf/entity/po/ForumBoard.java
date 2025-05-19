@@ -72,13 +72,6 @@ public class ForumBoard implements Serializable {
 		this.boardId = boardId;
 	}
 
-	public Integer getPBoardId() {
-		return this.pBoardId;
-	}
-
-	public void setPBoardId(Integer pBoardId) {
-		this.pBoardId = pBoardId;
-	}
 
 	public String getBoardName() {
 		return this.boardName;

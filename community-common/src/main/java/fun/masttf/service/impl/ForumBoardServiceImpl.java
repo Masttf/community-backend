@@ -5,9 +5,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.exception.BusinessException;
+import fun.masttf.entity.po.ForumArticle;
 import fun.masttf.entity.po.ForumBoard;
+import fun.masttf.entity.query.ForumArticleQuery;
 import fun.masttf.entity.query.ForumBoardQuery;
 import fun.masttf.service.ForumBoardService;
+import fun.masttf.mapper.ForumArticleMapper;
 import fun.masttf.mapper.ForumBoardMapper;
 import fun.masttf.entity.query.SimplePage;
 import fun.masttf.entity.enums.PageSize;
@@ -23,7 +27,8 @@ public class ForumBoardServiceImpl implements ForumBoardService {
 
 	@Autowired
 	private ForumBoardMapper<ForumBoard, ForumBoardQuery> forumBoardMapper;
-
+	@Autowired
+	private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -120,11 +125,31 @@ public class ForumBoardServiceImpl implements ForumBoardService {
 	private List<ForumBoard> convertLine2Tree(List<ForumBoard> datalist, Integer pid) {
 		List<ForumBoard> children = new ArrayList<>();
 		for (ForumBoard m : datalist) {
-			if(m.getPBoardId().equals(pid)) {
+			if(m.getpBoardId().equals(pid)) {
 				m.setChildren(convertLine2Tree(datalist, m.getBoardId()));
 				children.add(m);
 			}
 		}
 		return children;
+	}
+
+	@Override
+	public void saveBoard(ForumBoard board) {
+		if(board.getBoardId() == null) {
+			ForumBoardQuery query = new ForumBoardQuery();
+			query.setpBoardId(board.getpBoardId());
+			Integer count = forumBoardMapper.selectCount(query);
+			board.setSort(count + 1);
+			forumBoardMapper.insert(board);
+		} else {
+			ForumBoard dbInfo = forumBoardMapper.selectByBoardId(board.getBoardId());
+			if(dbInfo == null){
+				throw new BusinessException("板块不存在");
+			}
+			forumBoardMapper.updateByBoardId(board, board.getBoardId());
+			if(!dbInfo.getBoardName().equals(board.getBoardName())){
+				forumArticleMapper.updateBoardNameBatch(board.getpBoardId() == 0 ? 0 : 1, board.getBoardName(), board.getBoardId());
+			}
+		}
 	}
 }

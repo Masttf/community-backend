@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import fun.masttf.annotation.GlobalInterceptor;
 import fun.masttf.annotation.VerifyParam;
 import fun.masttf.config.AdminConfig;
 import fun.masttf.entity.constans.Constans;
@@ -53,12 +54,14 @@ public class ForumArticleController extends ABaseController {
     }
 
     @RequestMapping("/delArticle")
+    @GlobalInterceptor(checkParams = true)
     public ResponseVo<Object> delArticle(@VerifyParam(required = true) String articleIds) {
         forumArticleService.deleteArticle(articleIds);
         return getSuccessResponseVo(null);
     }
 
     @RequestMapping("/updateBoard")
+    @GlobalInterceptor(checkParams = true)
     public ResponseVo<Object> updateBoard(@VerifyParam(required = true) String articleId,
                                           @VerifyParam(required = true) Integer pBoardId,
                                           @VerifyParam(required = true) Integer boardId) {   
@@ -68,6 +71,7 @@ public class ForumArticleController extends ABaseController {
     }
 
     @RequestMapping("/getAttachment")
+    @GlobalInterceptor(checkParams = true)
     public ResponseVo<Object> getAttachment(@VerifyParam(required = true) String articleId) {   
         ForumArticleAttachmentQuery query = new ForumArticleAttachmentQuery();
         query.setArticleId(articleId);
@@ -79,6 +83,7 @@ public class ForumArticleController extends ABaseController {
     }
 
     @RequestMapping("/attachmentDownload")
+    @GlobalInterceptor(checkParams = true)
     public void attachmentDownload(HttpServletRequest request,
                             HttpServletResponse response,
                             @VerifyParam(required = true) String fileId) {
@@ -123,6 +128,7 @@ public class ForumArticleController extends ABaseController {
     }
 
     @RequestMapping("/topArticle")
+    @GlobalInterceptor(checkParams = true)
     public ResponseVo<Object> topArticle(@VerifyParam(required = true) String articleId, Integer topType) {   
         ArticleTopTypeEnum type = ArticleTopTypeEnum.getByType(topType);
         if(type == null){
@@ -135,6 +141,7 @@ public class ForumArticleController extends ABaseController {
     }
 
     @RequestMapping("/auditArticle")
+    @GlobalInterceptor(checkParams = true)
     public ResponseVo<Object> auditArticle(@VerifyParam(required = true) String articleIds) {   
         forumArticleService.auditArticle(articleIds);
         return getSuccessResponseVo(null);
@@ -159,7 +166,7 @@ public class ForumArticleController extends ABaseController {
 
     @RequestMapping("/delComment")
     public ResponseVo<Object> delComment(String commentIds) {   
-        
+        forumCommentService.deleteComment(commentIds);
         return getSuccessResponseVo(null);
     }
      

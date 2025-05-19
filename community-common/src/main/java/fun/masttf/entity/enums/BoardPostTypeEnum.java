@@ -9,6 +9,14 @@ public enum BoardPostTypeEnum {
         this.type = type;
         this.desc = desc;
     }
+    public static BoardPostTypeEnum getByType(Integer type) {
+        for (BoardPostTypeEnum postType : BoardPostTypeEnum.values()) {
+            if (postType.getType().equals(type)) {
+                return postType;
+            }
+        }
+        return null;
+    }
     public Integer getType() {
         return type;
     }

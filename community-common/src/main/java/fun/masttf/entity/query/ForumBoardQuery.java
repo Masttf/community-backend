@@ -58,13 +58,7 @@ public class ForumBoardQuery extends BaseQuery {
 		this.boardId = boardId;
 	}
 
-	public Integer getPBoardId() {
-		return this.pBoardId;
-	}
-
-	public void setPBoardId(Integer pBoardId) {
-		this.pBoardId = pBoardId;
-	}
+	
 
 	public String getBoardName() {
 		return this.boardName;
@@ -128,6 +122,14 @@ public class ForumBoardQuery extends BaseQuery {
 
 	public void setBoardDescFuzzy(String boardDescFuzzy) {
 		this.boardDescFuzzy = boardDescFuzzy;
+	}
+
+	public Integer getpBoardId() {
+		return pBoardId;
+	}
+
+	public void setpBoardId(Integer pBoardId) {
+		this.pBoardId = pBoardId;
 	}
 
 

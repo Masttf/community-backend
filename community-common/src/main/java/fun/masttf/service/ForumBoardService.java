@@ -59,4 +59,6 @@ public interface ForumBoardService {
 	Integer deleteByBoardId(Integer boardId);
 
 	List<ForumBoard> getBoardTree(Integer type);
+
+	void saveBoard(ForumBoard board);
 }
