@@ -28,4 +28,6 @@ public interface ForumArticleMapper<T, P> extends BaseMapper<T, P> {
 	void updateArticleCount(@Param("updateType") Integer updateType,@Param("changeCount") Integer changeCount, @Param("articleId") String articleId);
 
 	void updateBoardNameBatch(@Param("boardType") Integer boardType,@Param("boardName") String boardName, @Param("boardId") Integer boardId);
+
+	void updateStatusBatchByUserId(@Param("status") Integer status, @Param("userId") String userId);
 }

@@ -1,5 +1,7 @@
 package fun.masttf.entity.dto;
 
+import fun.masttf.annotation.VerifyParam;
+
 /*
  * 评论设置
  */
@@ -8,15 +10,18 @@ public class SysSetting4CommentDto {
     /*
      * 评论积分
      */
+    @VerifyParam(required = true)
     private Integer commentIntegral;
     /*
      * 评论数量阈值
      */
+    @VerifyParam(required = true)
     private Integer commentDayCountThreshold;
 
     /*
      * 评论是否开启
      */
+    @VerifyParam(required = true)
     private Boolean commentOpen;
 
     public Integer getCommentIntegral() {

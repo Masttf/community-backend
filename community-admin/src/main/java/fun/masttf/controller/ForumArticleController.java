@@ -47,9 +47,8 @@ public class ForumArticleController extends ABaseController {
     @Autowired
     private ForumCommentService forumCommentService;
     @RequestMapping("/loadArticle")
-    public ResponseVo<Object> loadArticle(ForumArticleQuery query, Integer pageNo) {
+    public ResponseVo<Object> loadArticle(ForumArticleQuery query) {
         query.setOrderBy(ArticleOrderTypeEnum.NEW.getOderSql());
-        query.setPageNo(pageNo);
         return getSuccessResponseVo(forumArticleService.findListByPage(query));
     }
 
@@ -148,9 +147,8 @@ public class ForumArticleController extends ABaseController {
     }
 
     @RequestMapping("/loadComment")
-    public ResponseVo<Object> loadComment(ForumCommentQuery query, Integer pageNo) {   
+    public ResponseVo<Object> loadComment(ForumCommentQuery query) {   
         query.setLoadChildren(true);
-        query.setPageNo(pageNo);
         query.setOrderBy(CommentOrderTypeEnum.NEW.getOderSql());
         return getSuccessResponseVo(forumCommentService.findListByPage(query));
     }

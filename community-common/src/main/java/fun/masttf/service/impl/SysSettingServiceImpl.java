@@ -4,8 +4,10 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.exception.BusinessException;
 import fun.masttf.entity.po.SysSetting;
 import fun.masttf.entity.query.SysSettingQuery;
 import fun.masttf.service.SysSettingService;
@@ -137,5 +139,31 @@ public class SysSettingServiceImpl implements SysSettingService {
 		} catch (Exception e) {
 			logger.error("刷新系统设置信息缓存失败", e);
 		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void saveSetting(SysSettingDto sysSettingDto) {
+		for (SysSettingCodeEnum setting : SysSettingCodeEnum.values()) {
+			String code = setting.getCode();
+			Object obj = null;
+			try {
+				PropertyDescriptor pd = new PropertyDescriptor(setting.getPropName(), SysSettingDto.class);
+				Method method = pd.getReadMethod();
+				obj = method.invoke(sysSettingDto);
+			} catch (Exception e) {
+				logger.error("获取系统设置信息失败", e);
+				throw new BusinessException("获取系统设置信息失败");
+			}
+			if (obj == null) {
+				continue;
+			}
+			String jsonContent = JsonUtils.convertObj2Json(obj);
+			SysSetting sysSetting = new SysSetting();
+			sysSetting.setCode(code);
+			sysSetting.setJsonContent(jsonContent);
+			sysSettingMapper.updateByCode(sysSetting, code);
+		}
+		refreshCache();
 	}
 }

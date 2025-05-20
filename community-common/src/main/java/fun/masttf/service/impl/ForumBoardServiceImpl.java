@@ -3,6 +3,7 @@ package fun.masttf.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.exception.BusinessException;
@@ -150,6 +151,20 @@ public class ForumBoardServiceImpl implements ForumBoardService {
 			if(!dbInfo.getBoardName().equals(board.getBoardName())){
 				forumArticleMapper.updateBoardNameBatch(board.getpBoardId() == 0 ? 0 : 1, board.getBoardName(), board.getBoardId());
 			}
+		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void changeBoardSort(String boardIds) {
+		String[] ids = boardIds.split(",");
+		Integer index = 1;
+		for(String boardIdStr : ids) {
+			Integer boardId = Integer.valueOf(boardIdStr);
+			ForumBoard board = new ForumBoard();
+			board.setSort(index);
+			forumBoardMapper.updateByBoardId(board, boardId);
+			index++;
 		}
 	}
 }

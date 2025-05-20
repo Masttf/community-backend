@@ -103,4 +103,7 @@ public interface UserInfoService {
 
 	void updateUserInfo(UserInfo userInfo, MultipartFile avatar);
 
+	void updateUserStatus(String userId, Integer status);
+
+	void sendUserMessage(String userId, String message, Integer integral);
 }

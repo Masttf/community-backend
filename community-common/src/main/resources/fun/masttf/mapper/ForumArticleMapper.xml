@@ -691,4 +691,10 @@
 			</if>
 		</where>
 	</update>
+
+	<update id="updateStatusBatchByUserId">
+		UPDATE forum_article
+		SET status = #{status}
+		WHERE user_id = #{userId}
+	</update>
 </mapper>

@@ -58,4 +58,18 @@ public class ForumBoardController extends ABaseController {
         forumBoardService.saveBoard(board);
         return getSuccessResponseVo(null);
     }
+
+    @RequestMapping("/delBoard")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVo<Object> delBoard(@VerifyParam(required = true) Integer boardId) {
+        forumBoardService.deleteByBoardId(boardId);
+        return getSuccessResponseVo(null);
+    }
+
+    @RequestMapping("/changeBoardSort")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVo<Object> changeBoardSort(@VerifyParam(required = true) String boardIds) {
+        forumBoardService.changeBoardSort(boardIds);
+        return getSuccessResponseVo(null);
+    }
 }

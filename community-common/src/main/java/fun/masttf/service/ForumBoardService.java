@@ -61,4 +61,6 @@ public interface ForumBoardService {
 	List<ForumBoard> getBoardTree(Integer type);
 
 	void saveBoard(ForumBoard board);
+
+	void changeBoardSort(String boardIds);
 }

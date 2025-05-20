@@ -2,6 +2,7 @@ package fun.masttf.service;
 
 import java.util.List;
 import fun.masttf.entity.vo.PaginationResultVo;
+import fun.masttf.entity.dto.SysSettingDto;
 import fun.masttf.entity.po.SysSetting;
 import fun.masttf.entity.query.SysSettingQuery;
 
@@ -59,4 +60,6 @@ public interface SysSettingService {
 	Integer deleteByCode(String code);
 
 	void refreshCache();
+
+	void saveSetting(SysSettingDto sysSettingDto);
 }

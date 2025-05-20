@@ -461,4 +461,10 @@
 		SET top_type = 0
 		WHERE article_id = #{articleId}
 	</update>
+
+	<update id="updateStatusBatchByUserId">
+		UPDATE forum_comment
+		SET status = #{status}
+		WHERE user_id = #{userId}
+	</update>
 </mapper>

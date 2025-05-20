@@ -1,5 +1,7 @@
 package fun.masttf.entity.dto;
 
+import fun.masttf.annotation.VerifyParam;
+
 /*
  * 发帖设置
  */
@@ -7,18 +9,22 @@ public class SysSetting4PostDto {
     /*
      * 发帖积分
      */
+    @VerifyParam(required = true)
     private Integer postIntegral;
     /*
      * 一天发帖数量
      */
+    @VerifyParam(required = true)
     private Integer postDayCountThreshold;
     /*
      * 每天上传图片数量
      */
+    @VerifyParam(required = true)
     private Integer dayImageUploadCount;
     /*
      * 附件大小 单位mb
      */
+    @VerifyParam(required = true)
     private Integer attachmentSize;
 
     public Integer getPostIntegral() {

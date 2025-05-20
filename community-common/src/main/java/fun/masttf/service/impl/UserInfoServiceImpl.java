@@ -11,6 +11,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import fun.masttf.entity.vo.PaginationResultVo;
 import fun.masttf.exception.BusinessException;
+import fun.masttf.entity.po.ForumArticle;
+import fun.masttf.entity.po.ForumComment;
 import fun.masttf.entity.po.UserInfo;
 import fun.masttf.entity.po.UserIntegralRecord;
 import fun.masttf.entity.po.UserMessage;
@@ -24,13 +26,19 @@ import fun.masttf.utils.JsonUtils;
 import fun.masttf.utils.OKHttpUtils;
 import fun.masttf.utils.StringTools;
 import fun.masttf.utils.SysCacheUtils;
+import fun.masttf.mapper.ForumArticleMapper;
+import fun.masttf.mapper.ForumCommentMapper;
 import fun.masttf.mapper.UserInfoMapper;
 import fun.masttf.mapper.UserIntegralRecordMapper;
 import fun.masttf.mapper.UserMessageMapper;
+import fun.masttf.entity.query.ForumArticleQuery;
+import fun.masttf.entity.query.ForumCommentQuery;
 import fun.masttf.entity.query.SimplePage;
 import fun.masttf.config.WebConfig;
 import fun.masttf.entity.constans.Constans;
 import fun.masttf.entity.dto.SessionWebUserDto;
+import fun.masttf.entity.enums.ArticleStatusEnum;
+import fun.masttf.entity.enums.CommentStatusEnum;
 import fun.masttf.entity.enums.FileUploadEnum;
 import fun.masttf.entity.enums.MessageStatusEnum;
 import fun.masttf.entity.enums.MessageTypeEnum;
@@ -64,6 +72,12 @@ public class UserInfoServiceImpl implements UserInfoService {
 	private WebConfig webConfig;
 	@Autowired
 	private FileUtils fileUtils;
+	@Autowired
+	private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
+	@Autowired
+	private ForumCommentMapper<ForumComment, ForumCommentQuery> forumCommentMapper;
+	@Autowired
+	private UserInfoService userInfoService;
 	/**
 	 * 根据条件查询列表
 	 */
@@ -324,5 +338,37 @@ public class UserInfoServiceImpl implements UserInfoService {
 		}
 	}
 
-	
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateUserStatus(String userId, Integer status){
+		UserStatusEnum statusEnum = UserStatusEnum.getByStatus(status);
+		if(statusEnum == null){
+			throw new BusinessException("用户状态错误");
+		}
+		if(statusEnum.equals(UserStatusEnum.DISABLE)){
+			forumArticleMapper.updateStatusBatchByUserId(ArticleStatusEnum.DEL.getStatus(), userId);
+			forumCommentMapper.updateStatusBatchByUserId(CommentStatusEnum.DEL.getStatus(), userId);
+		}
+		UserInfo updateInfo = new UserInfo();
+		updateInfo.setStatus(status);
+		userInfoMapper.updateByUserId(updateInfo, userId);
+	}
+
+	@Override
+	public void sendUserMessage(String userId, String message, Integer integral){
+		UserMessage userMessage = new UserMessage();
+		userMessage.setReceivedUserId(userId);
+		userMessage.setMessageType(MessageTypeEnum.SYS.getType());
+		userMessage.setCreateTime(new Date());
+		userMessage.setStatus(MessageStatusEnum.NO_READ.getStatus());
+		userMessage.setMessageContent(message);
+		userMessageMapper.insert(userMessage);
+		if(integral == null || integral == 0)return ;
+		UserIntegralChangeTypeEnum integralEnum = UserIntegralChangeTypeEnum.ADD;
+		if(integral < 0){
+			integralEnum = UserIntegralChangeTypeEnum.REDUCE;
+			integral = -integral;
+		}
+		userInfoService.updateUserIntegral(userId, UserIntegralOperTypeEnum.ADMIN, integralEnum.getChangeType(), integral);
+	}
 }
